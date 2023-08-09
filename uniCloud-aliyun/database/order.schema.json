@@ -17,14 +17,11 @@
 		"user_id": {
 			"description": "用户id"
 		},
-		"amount": {
-			"description": "订单总价格"
+		"user_name": {
+			"description": "用户名称"
 		},
-		"remark": {
-			"description": "备注"
-		},
-		"voucher_id": {
-			"description": "购物券id"
+		"shop_list": {
+			"description": "食物列表"
 		},
 		"create_time": {
 			"description": "创建时间"

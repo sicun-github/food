@@ -4,34 +4,12 @@
 			:clearabled="true"
 			margin="20rpx 20rpx"
 			bgColor="#fff"
-			placeholder="搜索商家店铺名称"
+			placeholder="搜索菜品名称"
 			borderColor="#eee"
 			@search="search"
 			:showAction="false"
 			v-model="keyword"
 		></u-search>
-		<u-sticky bgColor="#fff">
-			<view style="height: 80rpx; display: flex; align-items: center">
-				<u-tabs
-					:list="list1"
-					lineWidth="20"
-					lineHeight="7"
-					:lineColor="`url(${lineBg}) 100% 100%`"
-					:activeStyle="{
-						color: '#303133',
-						fontWeight: 'bold',
-						transform: 'scale(1.05)',
-					}"
-					@change="getInfo"
-					:inactiveStyle="{
-						color: '#606266',
-						transform: 'scale(1)',
-					}"
-					itemStyle="padding-left: 15px; padding-right: 15px; height: 34px;"
-				>
-				</u-tabs>
-			</view>
-		</u-sticky>
 		<u-empty
 			v-if="ShopList.length <= 0 && showWinner == false"
 			mode="data"
@@ -39,54 +17,65 @@
 			icon="http://cdn.uviewui.com/uview/empty/data.png"
 		>
 		</u-empty>
-		<view class="card_container" v-show="!showWinner">
-			<view
-				class="card"
-				v-for="item in ShopList"
-				:key="item._id"
-				@click="gotoPurchase(item._id)"
-			>
-				<u--image
-					:src="item.shop_img"
-					width="200rpx"
-					height="200rpx"
-					radius="10rpx"
-				></u--image>
-				<view class="right">
-					<view class="title">
-						<u--text
-							:lines="1"
-							bold
-							:text="item.shop_name"
-							size="30rpx"
-						></u--text>
-						<text class="on $u-primary">营业中</text>
-					</view>
+		<view style="padding-bottom: 90rpx">
+			<u-checkbox-group wrap @change="checkboxGroupChange" shape="circle">
+				<view class="card_container" v-show="!showWinner">
+					<view class="card" v-for="item in ShopList" :key="item._id">
+						<u-image
+							:src="item.shop_img"
+							width="200rpx"
+							height="200rpx"
+							radius="10rpx"
+						></u-image>
+						<view class="right">
+							<view class="title">
+								<u-text
+									:lines="1"
+									bold
+									:text="item.shop_name"
+									size="30rpx"
+								></u-text>
+							</view>
 
-					<view class="text_info">
-						<text class="u-info">{{ item.shop_opentime }}</text>
-					</view>
-					<view class="text_info">
-						<text class="u-info">起送 ￥0</text
-						><text class="u-info" style="margin-left: 5rpx">配送 约￥1</text>
-					</view>
-					<view class="stand_container" style="margin-top: 15rpx">
-						<text class="stand $u-warning-dark">{{ item.shop_stand }}</text>
+							<view class="text_info">
+								<text class="u-info">{{ item.shop_desc }}</text>
+							</view>
+							<view class="stand_container" style="margin-top: 15rpx">
+								<u-rate
+									active-color="#FA3534"
+									inactive-color="#b2b2b2"
+									:v-model="item.shop_star"
+								></u-rate>
+							</view>
+						</view>
+						<view style="margin-left: 10rpx">
+							<u-checkbox
+								active-color="#FCC32B"
+								:v-model="selects.includes(item._id)"
+								:name="item._id"
+							></u-checkbox>
+						</view>
 					</view>
 				</view>
-			</view>
+			</u-checkbox-group>
 		</view>
-		<winnerMeal v-show="showWinner"></winnerMeal>
+		<view class="but">
+			<u-button type="primary" @click="placeOrder">下单</u-button>
+		</view>
+		<!-- <winnerMeal v-show="showWinner"></winnerMeal> -->
 	</view>
 </template>
 
 <script>
+import dayjs from 'dayjs';
 const shop = uniCloud.importObject('shop');
 const special_tool = uniCloud.importObject('special_tool');
-import winnerMeal from './winnerMeal.vue';
+const orderCloud = uniCloud.importObject('order');
+// import winnerMeal from './winnerMeal.vue';
+import { mapState } from 'vuex';
 export default {
 	components: {
-		winnerMeal,
+		// winnerMeal,
 	},
 	data() {
 		return {
@@ -109,7 +98,14 @@ export default {
 				},
 			],
 			ShopList: [],
+			selects: [],
 		};
+	},
+	computed: {
+		...mapState({
+			user_name: (state) => state.user.userinfo.user_name,
+			user_id: (state) => state.user.openid,
+		}),
 	},
 	methods: {
 		async search() {
@@ -130,40 +126,49 @@ export default {
 				true
 			);
 		},
-		async getNorthShopInfo() {
-			let result = await shop.getShopByLoc('北区');
-			console.log(
-				'%c 🎂 result: ',
-				'background-color: #6EC1C2;color:#fff;',
-				result
-			);
-			this.ShopList = result.data;
-			console.log(this.ShopList);
-		},
 		async getSouthShopInfo() {
-			let result = await shop.getShopByLoc('南区');
+			let result = await shop.getShopByLoc();
 			this.ShopList = result.data;
 		},
+
 		async getWinnerMeal() {
 			let result = await special_tool.winnerMeal();
 			this.$store.commit('SET_WINNERMEAL', result.data);
 		},
-		async getInfo(item) {
-			if (item.index == 0) {
-				this.getSouthShopInfo();
-				console.log(this.showWinner);
-			}
-
-			if (item.index == 1) {
-				this.getNorthShopInfo();
-				console.log(this.showWinner);
-			}
-			if (item.index == 2) {
-				await this.getWinnerMeal();
-				this.showWinner = true;
-				return;
-			}
+		async getInfo() {
+			this.getSouthShopInfo();
+			// if (item.index == 2) {
+			// 	await this.getWinnerMeal();
+			// 	this.showWinner = true;
+			// 	return;
+			// }
 			this.showWinner = false;
+		},
+
+		// 选中任一checkbox时，由checkbox-group触发
+		checkboxGroupChange(e) {
+			this.selects = e;
+		},
+
+		//下单
+		async placeOrder() {
+			const create_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
+			const shop_list = this.ShopList.filter((item) => {
+				return this.selects.includes(item._id);
+			});
+			const order = {
+				user_id: this.user_id,
+				name: this.user_name,
+				shop_list,
+				create_time,
+			};
+			const result = await orderCloud.createOrder(order);
+			if (result.code === 200) {
+				uni.showToast({
+					title: '下单成功！',
+					duration: 2000,
+				});
+			}
 		},
 	},
 	onLoad() {
@@ -188,6 +193,7 @@ page {
 			background-color: #fff;
 			margin-bottom: 10rpx;
 			display: flex;
+			align-items: center;
 			.right {
 				flex: 1;
 				margin-left: 10rpx;
@@ -204,6 +210,14 @@ page {
 					display: flex;
 					margin-top: 5rpx;
 					font-size: 22rpx;
+
+					.u-info {
+						overflow: hidden;
+						text-overflow: ellipsis;
+						display: -webkit-box;
+						-webkit-box-orient: vertical;
+						-webkit-line-clamp: 3;
+					}
 				}
 				.stand_container {
 					.stand {
@@ -221,6 +235,13 @@ page {
 				}
 			}
 		}
+	}
+
+	.but {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
 	}
 }
 </style>

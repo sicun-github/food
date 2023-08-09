@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-var objectKeys = ['qy', 'env', 'error', 'version', 'lanDebug', 'cloud', 'serviceMarket', 'router', 'worklet'];
+var objectKeys = ['qy', 'env', 'error', 'version', 'lanDebug', 'cloud', 'serviceMarket', 'router', 'worklet', '__webpack_require_UNI_MP_PLUGIN__'];
 var singlePageDisableKey = ['lanDebug', 'router', 'worklet'];
 var target = typeof globalThis !== 'undefined' ? globalThis : function () {
   return this;
@@ -248,22 +248,22 @@ function removeInterceptor(method, option) {
     removeInterceptorHook(globalInterceptors, method);
   }
 }
-function wrapperHook(hook) {
+function wrapperHook(hook, params) {
   return function (data) {
-    return hook(data) || data;
+    return hook(data, params) || data;
   };
 }
 function isPromise(obj) {
   return !!obj && ((0, _typeof2.default)(obj) === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 }
-function queue(hooks, data) {
+function queue(hooks, data, params) {
   var promise = false;
   for (var i = 0; i < hooks.length; i++) {
     var hook = hooks[i];
     if (promise) {
-      promise = Promise.resolve(wrapperHook(hook));
+      promise = Promise.resolve(wrapperHook(hook, params));
     } else {
-      var res = hook(data);
+      var res = hook(data, params);
       if (isPromise(res)) {
         promise = Promise.resolve(res);
       }
@@ -286,7 +286,7 @@ function wrapperOptions(interceptor) {
     if (Array.isArray(interceptor[name])) {
       var oldCallback = options[name];
       options[name] = function callbackInterceptor(res) {
-        queue(interceptor[name], res).then(function (res) {
+        queue(interceptor[name], res, options).then(function (res) {
           /* eslint-disable no-mixed-operators */
           return isFn(oldCallback) && oldCallback(res) || res;
         });
@@ -335,7 +335,8 @@ function invokeApi(method, api, options) {
     if (Array.isArray(interceptor.invoke)) {
       var res = queue(interceptor.invoke, options);
       return res.then(function (options) {
-        return api.apply(void 0, [wrapperOptions(interceptor, options)].concat(params));
+        // 重新访问 getApiInterceptorHooks, 允许 invoke 中再次调用 addInterceptor,removeInterceptor
+        return api.apply(void 0, [wrapperOptions(getApiInterceptorHooks(method), options)].concat(params));
       });
     } else {
       return api.apply(void 0, [wrapperOptions(interceptor, options)].concat(params));
@@ -774,13 +775,13 @@ function populateParameters(result) {
   // wx.getAccountInfoSync
 
   var parameters = {
-    appId: "__UNI__9B90031",
-    appName: "校园综合服务平台",
+    appId: "__UNI__57FA905",
+    appName: "每日菜谱",
     appVersion: "1.0.0",
     appVersionCode: "100",
     appLanguage: getAppLanguage(hostLanguage),
-    uniCompileVersion: "3.7.9",
-    uniRuntimeVersion: "3.7.9",
+    uniCompileVersion: "3.8.7",
+    uniRuntimeVersion: "3.8.7",
     uniPlatform: undefined || "mp-weixin",
     deviceBrand: deviceBrand,
     deviceModel: model,
@@ -873,8 +874,8 @@ var getAppBaseInfo = {
     var _hostName = getHostName(result);
     var hostLanguage = language.replace('_', '-');
     result = sortObject(Object.assign(result, {
-      appId: "__UNI__9B90031",
-      appName: "校园综合服务平台",
+      appId: "__UNI__57FA905",
+      appName: "每日菜谱",
       appVersion: "1.0.0",
       appVersionCode: "100",
       appLanguage: getAppLanguage(hostLanguage),
@@ -1556,7 +1557,7 @@ function initData(vueOptions, context) {
     try {
       data = data.call(context); // 支持 Vue.prototype 上挂的数据
     } catch (e) {
-      if (Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"校园综合服务平台","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"每日菜谱","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.warn('根据 Vue 的 data 函数初始化小程序 data 失败，请尽量确保 data 函数中不访问 vm 对象，否则可能影响首次数据渲染速度。', data);
       }
     }
@@ -1953,14 +1954,10 @@ function handleEvent(event) {
   }
 }
 var eventChannels = {};
-var eventChannelStack = [];
 function getEventChannel(id) {
-  if (id) {
-    var eventChannel = eventChannels[id];
-    delete eventChannels[id];
-    return eventChannel;
-  }
-  return eventChannelStack.shift();
+  var eventChannel = eventChannels[id];
+  delete eventChannels[id];
+  return eventChannel;
 }
 var hooks = ['onShow', 'onHide', 'onError', 'onPageNotFound', 'onThemeChange', 'onUnhandledRejection'];
 function initEventChannel() {
@@ -1982,38 +1979,54 @@ function initEventChannel() {
 function initScopedSlotsParams() {
   var center = {};
   var parents = {};
-  _vue.default.prototype.$hasScopedSlotsParams = function (vueId) {
-    var has = center[vueId];
-    if (!has) {
-      parents[vueId] = this;
-      this.$on('hook:destroyed', function () {
-        delete parents[vueId];
-      });
-    }
-    return has;
-  };
-  _vue.default.prototype.$getScopedSlotsParams = function (vueId, name, key) {
-    var data = center[vueId];
-    if (data) {
-      var object = data[name] || {};
-      return key ? object[key] : object;
-    } else {
-      parents[vueId] = this;
-      this.$on('hook:destroyed', function () {
-        delete parents[vueId];
-      });
-    }
-  };
-  _vue.default.prototype.$setScopedSlotsParams = function (name, value) {
+  function currentId(fn) {
     var vueIds = this.$options.propsData.vueId;
     if (vueIds) {
       var vueId = vueIds.split(',')[0];
-      var object = center[vueId] = center[vueId] || {};
-      object[name] = value;
+      fn(vueId);
+    }
+  }
+  _vue.default.prototype.$hasSSP = function (vueId) {
+    var slot = center[vueId];
+    if (!slot) {
+      parents[vueId] = this;
+      this.$on('hook:destroyed', function () {
+        delete parents[vueId];
+      });
+    }
+    return slot;
+  };
+  _vue.default.prototype.$getSSP = function (vueId, name, needAll) {
+    var slot = center[vueId];
+    if (slot) {
+      var params = slot[name] || [];
+      if (needAll) {
+        return params;
+      }
+      return params[0];
+    }
+  };
+  _vue.default.prototype.$setSSP = function (name, value) {
+    var index = 0;
+    currentId.call(this, function (vueId) {
+      var slot = center[vueId];
+      var params = slot[name] = slot[name] || [];
+      params.push(value);
+      index = params.length - 1;
+    });
+    return index;
+  };
+  _vue.default.prototype.$initSSP = function () {
+    currentId.call(this, function (vueId) {
+      center[vueId] = {};
+    });
+  };
+  _vue.default.prototype.$callSSP = function () {
+    currentId.call(this, function (vueId) {
       if (parents[vueId]) {
         parents[vueId].$forceUpdate();
       }
-    }
+    });
   };
   _vue.default.mixin({
     destroyed: function destroyed() {
@@ -2165,6 +2178,7 @@ function parseBaseComponent(vueComponentOptions) {
     vueOptions = _initVueComponent2[1];
   var options = _objectSpread({
     multipleSlots: true,
+    // styleIsolation: 'apply-shared',
     addGlobalClass: true
   }, vueOptions.options || {});
   {
@@ -2410,7 +2424,7 @@ if (typeof Proxy !== 'undefined' && "mp-weixin" !== 'app-plus') {
       uni[name] = promisify(name, todoApis[name]);
     });
     Object.keys(extraApi).forEach(function (name) {
-      uni[name] = promisify(name, todoApis[name]);
+      uni[name] = promisify(name, extraApi[name]);
     });
   }
   Object.keys(eventApi).forEach(function (name) {
@@ -2829,7 +2843,6 @@ var _slicedToArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runt
 var _classCallCheck2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ 23));
 var _createClass2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/createClass */ 24));
 var _typeof2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/typeof */ 13));
-var isArray = Array.isArray;
 var isObject = function isObject(val) {
   return val !== null && (0, _typeof2.default)(val) === 'object';
 };
@@ -2908,7 +2921,7 @@ function parse(format, _ref) {
 function compile(tokens, values) {
   var compiled = [];
   var index = 0;
-  var mode = isArray(values) ? 'list' : isObject(values) ? 'named' : 'unknown';
+  var mode = Array.isArray(values) ? 'list' : isObject(values) ? 'named' : 'unknown';
   if (mode === 'unknown') {
     return compiled;
   }
@@ -2974,6 +2987,10 @@ function normalizeLocale(locale, messages) {
     return locale;
   }
   locale = locale.toLowerCase();
+  if (locale === 'chinese') {
+    // 支付宝
+    return LOCALE_ZH_HANS;
+  }
   if (locale.indexOf('zh') === 0) {
     if (locale.indexOf('-hans') > -1) {
       return LOCALE_ZH_HANS;
@@ -2986,7 +3003,11 @@ function normalizeLocale(locale, messages) {
     }
     return LOCALE_ZH_HANS;
   }
-  var lang = startsWith(locale, [LOCALE_EN, LOCALE_FR, LOCALE_ES]);
+  var locales = [LOCALE_EN, LOCALE_FR, LOCALE_ES];
+  if (messages && Object.keys(messages).length > 0) {
+    locales = Object.keys(messages);
+  }
+  var lang = startsWith(locale, locales);
   if (lang) {
     return lang;
   }
@@ -3293,7 +3314,7 @@ function compileJsonObj(jsonObj, localeValues, delimiters) {
   return jsonObj;
 }
 function walkJsonObj(jsonObj, walk) {
-  if (isArray(jsonObj)) {
+  if (Array.isArray(jsonObj)) {
     for (var i = 0; i < jsonObj.length; i++) {
       if (walk(jsonObj, i)) {
         return true;
@@ -3385,7 +3406,7 @@ module.exports = _createClass, module.exports.__esModule = true, module.exports[
 __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(global) {/*!
  * Vue.js v2.6.11
- * (c) 2014-2022 Evan You
+ * (c) 2014-2023 Evan You
  * Released under the MIT License.
  */
 /*  */
@@ -8913,7 +8934,7 @@ function type(obj) {
 
 function flushCallbacks$1(vm) {
     if (vm.__next_tick_callbacks && vm.__next_tick_callbacks.length) {
-        if (Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"校园综合服务平台","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+        if (Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"每日菜谱","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:flushCallbacks[' + vm.__next_tick_callbacks.length + ']');
@@ -8934,14 +8955,14 @@ function nextTick$1(vm, cb) {
     //1.nextTick 之前 已 setData 且 setData 还未回调完成
     //2.nextTick 之前存在 render watcher
     if (!vm.__next_tick_pending && !hasRenderWatcher(vm)) {
-        if(Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"校园综合服务平台","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"每日菜谱","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:nextVueTick');
         }
         return nextTick(cb, vm)
     }else{
-        if(Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"校园综合服务平台","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"每日菜谱","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance$1 = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance$1.is || mpInstance$1.route) + '][' + vm._uid +
                 ']:nextMPTick');
@@ -9037,7 +9058,7 @@ var patch = function(oldVnode, vnode) {
     });
     var diffData = this.$shouldDiffData === false ? data : diff(data, mpData);
     if (Object.keys(diffData).length) {
-      if (Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"校园综合服务平台","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_DARK_MODE":"false","VUE_APP_NAME":"每日菜谱","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + this._uid +
           ']差量更新',
           JSON.stringify(diffData));
@@ -9395,12 +9416,13 @@ var LIFECYCLE_HOOKS$1 = [
     'onNavigationBarSearchInputChanged',
     'onNavigationBarSearchInputConfirmed',
     'onNavigationBarSearchInputClicked',
+    'onUploadDouyinVideo',
+    'onNFCReadMessage',
     //Component
     // 'onReady', // 兼容旧版本，应该移除该事件
     'onPageShow',
     'onPageHide',
-    'onPageResize',
-    'onUploadDouyinVideo'
+    'onPageResize'
 ];
 function lifecycleMixin$1(Vue) {
 
@@ -9480,20 +9502,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
+var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/assertThisInitialized */ 30));
 var _slicedToArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/slicedToArray */ 5));
 var _typeof2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/typeof */ 13));
 var _toConsumableArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ 18));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
-var _inherits2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/inherits */ 31));
-var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/possibleConstructorReturn */ 32));
+var _inherits2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/inherits */ 32));
+var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/possibleConstructorReturn */ 33));
 var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/getPrototypeOf */ 34));
 var _wrapNativeSuper2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/wrapNativeSuper */ 35));
 var _classCallCheck2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ 23));
 var _createClass2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/createClass */ 24));
 var _uniI18n = __webpack_require__(/*! @dcloudio/uni-i18n */ 22);
 var _pages = _interopRequireDefault(__webpack_require__(/*! @/pages.json */ 37));
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e33) { throw _e33; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e34) { didErr = true; err = _e34; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e35) { throw _e35; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e36) { didErr = true; err = _e36; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -9625,7 +9648,7 @@ var r = s(function (e, t) {
             return new o.init(n, t);
           }
         },
-        l = a.Utf8 = {
+        h = a.Utf8 = {
           stringify: function stringify(e) {
             try {
               return decodeURIComponent(escape(u.stringify(e)));
@@ -9637,12 +9660,12 @@ var r = s(function (e, t) {
             return u.parse(unescape(encodeURIComponent(e)));
           }
         },
-        h = r.BufferedBlockAlgorithm = i.extend({
+        l = r.BufferedBlockAlgorithm = i.extend({
           reset: function reset() {
             this._data = new o.init(), this._nDataBytes = 0;
           },
           _append: function _append(e) {
-            "string" == typeof e && (e = l.parse(e)), this._data.concat(e), this._nDataBytes += e.sigBytes;
+            "string" == typeof e && (e = h.parse(e)), this._data.concat(e), this._nDataBytes += e.sigBytes;
           },
           _process: function _process(t) {
             var n = this._data,
@@ -9653,13 +9676,13 @@ var r = s(function (e, t) {
               c = (a = t ? e.ceil(a) : e.max((0 | a) - this._minBufferSize, 0)) * i,
               u = e.min(4 * c, r);
             if (c) {
-              for (var l = 0; l < c; l += i) {
-                this._doProcessBlock(s, l);
+              for (var h = 0; h < c; h += i) {
+                this._doProcessBlock(s, h);
               }
-              var h = s.splice(0, c);
+              var l = s.splice(0, c);
               n.sigBytes -= u;
             }
-            return new o.init(h, u);
+            return new o.init(l, u);
           },
           clone: function clone() {
             var e = i.clone.call(this);
@@ -9667,13 +9690,13 @@ var r = s(function (e, t) {
           },
           _minBufferSize: 0
         });
-      r.Hasher = h.extend({
+      r.Hasher = l.extend({
         cfg: i.extend(),
         init: function init(e) {
           this.cfg = this.cfg.extend(e), this.reset();
         },
         reset: function reset() {
-          h.reset.call(this), this._doReset();
+          l.reset.call(this), this._doReset();
         },
         update: function update(e) {
           return this._append(e), this._process(), this;
@@ -9733,17 +9756,17 @@ var r = s(function (e, t) {
             _ = e[t + 7],
             w = e[t + 8],
             v = e[t + 9],
-            b = e[t + 10],
+            I = e[t + 10],
             S = e[t + 11],
-            k = e[t + 12],
-            I = e[t + 13],
-            T = e[t + 14],
-            C = e[t + 15],
-            A = i[0],
-            P = i[1],
+            b = e[t + 12],
+            k = e[t + 13],
+            C = e[t + 14],
+            T = e[t + 15],
+            P = i[0],
+            A = i[1],
             E = i[2],
             O = i[3];
-          A = u(A, P, E, O, o, 7, a[0]), O = u(O, A, P, E, c, 12, a[1]), E = u(E, O, A, P, p, 17, a[2]), P = u(P, E, O, A, f, 22, a[3]), A = u(A, P, E, O, g, 7, a[4]), O = u(O, A, P, E, m, 12, a[5]), E = u(E, O, A, P, y, 17, a[6]), P = u(P, E, O, A, _, 22, a[7]), A = u(A, P, E, O, w, 7, a[8]), O = u(O, A, P, E, v, 12, a[9]), E = u(E, O, A, P, b, 17, a[10]), P = u(P, E, O, A, S, 22, a[11]), A = u(A, P, E, O, k, 7, a[12]), O = u(O, A, P, E, I, 12, a[13]), E = u(E, O, A, P, T, 17, a[14]), A = l(A, P = u(P, E, O, A, C, 22, a[15]), E, O, c, 5, a[16]), O = l(O, A, P, E, y, 9, a[17]), E = l(E, O, A, P, S, 14, a[18]), P = l(P, E, O, A, o, 20, a[19]), A = l(A, P, E, O, m, 5, a[20]), O = l(O, A, P, E, b, 9, a[21]), E = l(E, O, A, P, C, 14, a[22]), P = l(P, E, O, A, g, 20, a[23]), A = l(A, P, E, O, v, 5, a[24]), O = l(O, A, P, E, T, 9, a[25]), E = l(E, O, A, P, f, 14, a[26]), P = l(P, E, O, A, w, 20, a[27]), A = l(A, P, E, O, I, 5, a[28]), O = l(O, A, P, E, p, 9, a[29]), E = l(E, O, A, P, _, 14, a[30]), A = h(A, P = l(P, E, O, A, k, 20, a[31]), E, O, m, 4, a[32]), O = h(O, A, P, E, w, 11, a[33]), E = h(E, O, A, P, S, 16, a[34]), P = h(P, E, O, A, T, 23, a[35]), A = h(A, P, E, O, c, 4, a[36]), O = h(O, A, P, E, g, 11, a[37]), E = h(E, O, A, P, _, 16, a[38]), P = h(P, E, O, A, b, 23, a[39]), A = h(A, P, E, O, I, 4, a[40]), O = h(O, A, P, E, o, 11, a[41]), E = h(E, O, A, P, f, 16, a[42]), P = h(P, E, O, A, y, 23, a[43]), A = h(A, P, E, O, v, 4, a[44]), O = h(O, A, P, E, k, 11, a[45]), E = h(E, O, A, P, C, 16, a[46]), A = d(A, P = h(P, E, O, A, p, 23, a[47]), E, O, o, 6, a[48]), O = d(O, A, P, E, _, 10, a[49]), E = d(E, O, A, P, T, 15, a[50]), P = d(P, E, O, A, m, 21, a[51]), A = d(A, P, E, O, k, 6, a[52]), O = d(O, A, P, E, f, 10, a[53]), E = d(E, O, A, P, b, 15, a[54]), P = d(P, E, O, A, c, 21, a[55]), A = d(A, P, E, O, w, 6, a[56]), O = d(O, A, P, E, C, 10, a[57]), E = d(E, O, A, P, y, 15, a[58]), P = d(P, E, O, A, I, 21, a[59]), A = d(A, P, E, O, g, 6, a[60]), O = d(O, A, P, E, S, 10, a[61]), E = d(E, O, A, P, p, 15, a[62]), P = d(P, E, O, A, v, 21, a[63]), i[0] = i[0] + A | 0, i[1] = i[1] + P | 0, i[2] = i[2] + E | 0, i[3] = i[3] + O | 0;
+          P = u(P, A, E, O, o, 7, a[0]), O = u(O, P, A, E, c, 12, a[1]), E = u(E, O, P, A, p, 17, a[2]), A = u(A, E, O, P, f, 22, a[3]), P = u(P, A, E, O, g, 7, a[4]), O = u(O, P, A, E, m, 12, a[5]), E = u(E, O, P, A, y, 17, a[6]), A = u(A, E, O, P, _, 22, a[7]), P = u(P, A, E, O, w, 7, a[8]), O = u(O, P, A, E, v, 12, a[9]), E = u(E, O, P, A, I, 17, a[10]), A = u(A, E, O, P, S, 22, a[11]), P = u(P, A, E, O, b, 7, a[12]), O = u(O, P, A, E, k, 12, a[13]), E = u(E, O, P, A, C, 17, a[14]), P = h(P, A = u(A, E, O, P, T, 22, a[15]), E, O, c, 5, a[16]), O = h(O, P, A, E, y, 9, a[17]), E = h(E, O, P, A, S, 14, a[18]), A = h(A, E, O, P, o, 20, a[19]), P = h(P, A, E, O, m, 5, a[20]), O = h(O, P, A, E, I, 9, a[21]), E = h(E, O, P, A, T, 14, a[22]), A = h(A, E, O, P, g, 20, a[23]), P = h(P, A, E, O, v, 5, a[24]), O = h(O, P, A, E, C, 9, a[25]), E = h(E, O, P, A, f, 14, a[26]), A = h(A, E, O, P, w, 20, a[27]), P = h(P, A, E, O, k, 5, a[28]), O = h(O, P, A, E, p, 9, a[29]), E = h(E, O, P, A, _, 14, a[30]), P = l(P, A = h(A, E, O, P, b, 20, a[31]), E, O, m, 4, a[32]), O = l(O, P, A, E, w, 11, a[33]), E = l(E, O, P, A, S, 16, a[34]), A = l(A, E, O, P, C, 23, a[35]), P = l(P, A, E, O, c, 4, a[36]), O = l(O, P, A, E, g, 11, a[37]), E = l(E, O, P, A, _, 16, a[38]), A = l(A, E, O, P, I, 23, a[39]), P = l(P, A, E, O, k, 4, a[40]), O = l(O, P, A, E, o, 11, a[41]), E = l(E, O, P, A, f, 16, a[42]), A = l(A, E, O, P, y, 23, a[43]), P = l(P, A, E, O, v, 4, a[44]), O = l(O, P, A, E, b, 11, a[45]), E = l(E, O, P, A, T, 16, a[46]), P = d(P, A = l(A, E, O, P, p, 23, a[47]), E, O, o, 6, a[48]), O = d(O, P, A, E, _, 10, a[49]), E = d(E, O, P, A, C, 15, a[50]), A = d(A, E, O, P, m, 21, a[51]), P = d(P, A, E, O, b, 6, a[52]), O = d(O, P, A, E, f, 10, a[53]), E = d(E, O, P, A, I, 15, a[54]), A = d(A, E, O, P, c, 21, a[55]), P = d(P, A, E, O, w, 6, a[56]), O = d(O, P, A, E, T, 10, a[57]), E = d(E, O, P, A, y, 15, a[58]), A = d(A, E, O, P, k, 21, a[59]), P = d(P, A, E, O, g, 6, a[60]), O = d(O, P, A, E, S, 10, a[61]), E = d(E, O, P, A, p, 15, a[62]), A = d(A, E, O, P, v, 21, a[63]), i[0] = i[0] + P | 0, i[1] = i[1] + A | 0, i[2] = i[2] + E | 0, i[3] = i[3] + O | 0;
         },
         _doFinalize: function _doFinalize() {
           var t = this._data,
@@ -9755,8 +9778,8 @@ var r = s(function (e, t) {
             o = s;
           n[15 + (r + 64 >>> 9 << 4)] = 16711935 & (i << 8 | i >>> 24) | 4278255360 & (i << 24 | i >>> 8), n[14 + (r + 64 >>> 9 << 4)] = 16711935 & (o << 8 | o >>> 24) | 4278255360 & (o << 24 | o >>> 8), t.sigBytes = 4 * (n.length + 1), this._process();
           for (var a = this._hash, c = a.words, u = 0; u < 4; u++) {
-            var l = c[u];
-            c[u] = 16711935 & (l << 8 | l >>> 24) | 4278255360 & (l << 24 | l >>> 8);
+            var h = c[u];
+            c[u] = 16711935 & (h << 8 | h >>> 24) | 4278255360 & (h << 24 | h >>> 8);
           }
           return a;
         },
@@ -9769,11 +9792,11 @@ var r = s(function (e, t) {
         var a = e + (t & n | ~t & s) + r + o;
         return (a << i | a >>> 32 - i) + t;
       }
-      function l(e, t, n, s, r, i, o) {
+      function h(e, t, n, s, r, i, o) {
         var a = e + (t & s | n & ~s) + r + o;
         return (a << i | a >>> 32 - i) + t;
       }
-      function h(e, t, n, s, r, i, o) {
+      function l(e, t, n, s, r, i, o) {
         var a = e + (t ^ n ^ s) + r + o;
         return (a << i | a >>> 32 - i) + t;
       }
@@ -9874,8 +9897,8 @@ var r = s(function (e, t) {
     }(), n.enc.Base64);
   });
 var u = "FUNCTION",
-  l = "OBJECT",
-  h = "CLIENT_DB",
+  h = "OBJECT",
+  l = "CLIENT_DB",
   d = "pending",
   p = "fullfilled",
   f = "rejected";
@@ -9899,16 +9922,16 @@ function _(e) {
 }
 var w = "REJECTED",
   v = "NOT_PENDING";
-var b = /*#__PURE__*/function () {
-  function b() {
+var I = /*#__PURE__*/function () {
+  function I() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
       e = _ref.createPromise,
       _ref$retryRule = _ref.retryRule,
       t = _ref$retryRule === void 0 ? w : _ref$retryRule;
-    (0, _classCallCheck2.default)(this, b);
+    (0, _classCallCheck2.default)(this, I);
     this.createPromise = e, this.status = null, this.promise = null, this.retryRule = t;
   }
-  (0, _createClass2.default)(b, [{
+  (0, _createClass2.default)(I, [{
     key: "needRetry",
     get: function get() {
       if (!this.status) return !0;
@@ -9930,20 +9953,20 @@ var b = /*#__PURE__*/function () {
       }), this.promise) : this.promise;
     }
   }]);
-  return b;
+  return I;
 }();
 function S(e) {
   return e && "string" == typeof e ? JSON.parse(e) : e;
 }
-var k = "development" === "development",
-  I = "mp-weixin",
-  T = "true" === undefined || !0 === undefined,
-  C = S([]),
-  A = "h5" === I ? "web" : "app-plus" === I ? "app" : I,
-  P = S({
+var b = "development" === "development",
+  k = "mp-weixin",
+  C = "true" === undefined || !0 === undefined,
+  T = S([]),
+  P = "h5" === k ? "web" : "app-plus" === k ? "app" : k,
+  A = S({
     "address": [
         "127.0.0.1",
-        "192.168.0.141",
+        "192.168.0.125",
         "198.18.0.1"
     ],
     "debugPort": 9000,
@@ -9967,7 +9990,7 @@ function U(e) {
   var n, s;
   return n = R, s = e, Object.prototype.hasOwnProperty.call(n, s) || (R[e] = t), R[e];
 }
-"app" === A && (R = uni._globalUniCloudObj ? uni._globalUniCloudObj : uni._globalUniCloudObj = {});
+"app" === P && (R = uni._globalUniCloudObj ? uni._globalUniCloudObj : uni._globalUniCloudObj = {});
 var L = ["invoke", "success", "fail", "complete"],
   N = U("_globalUniCloudInterceptor");
 function D(e, t) {
@@ -9995,10 +10018,10 @@ function q(e, t) {
     });
   }, Promise.resolve()) : Promise.resolve();
 }
-function K(e, t) {
+function M(e, t) {
   return N[e] && N[e][t] || [];
 }
-function M(e) {
+function K(e) {
   D("callObject", e);
 }
 var j = U("_globalUniCloudListener"),
@@ -10124,7 +10147,7 @@ function ue() {
     scene: t
   };
 }
-function le() {
+function he() {
   var e = uni.getLocale && uni.getLocale() || "en";
   if (ae) return _objectSpread(_objectSpread({}, ae), {}, {
     locale: e,
@@ -10149,7 +10172,7 @@ function le() {
     LOCALE: e
   });
 }
-var he = {
+var le = {
     sign: function sign(e, t) {
       var n = "";
       return Object.keys(e).sort().forEach(function (t) {
@@ -10160,7 +10183,7 @@ var he = {
       return new Promise(function (n, s) {
         t(Object.assign(e, {
           complete: function complete(e) {
-            e || (e = {}), k && "web" === A && e.errMsg && 0 === e.errMsg.indexOf("request:fail") && console.warn("发布H5，需要在uniCloud后台操作，绑定安全域名，否则会因为跨域问题而无法访问。教程参考：https://uniapp.dcloud.io/uniCloud/quickstart?id=useinh5");
+            e || (e = {}), b && "web" === P && e.errMsg && 0 === e.errMsg.indexOf("request:fail") && console.warn("发布H5，需要在uniCloud后台操作，绑定安全域名，否则会因为跨域问题而无法访问。教程参考：https://uniapp.dcloud.io/uniCloud/quickstart?id=useinh5");
             var t = e.data && e.data.header && e.data.header["x-serverless-request-id"] || e.header && e.header["request-id"];
             if (!e.statusCode || e.statusCode >= 400) return s(new ne({
               code: "SYS_ERR",
@@ -10217,7 +10240,7 @@ var fe = /*#__PURE__*/function () {
       }));
     }), this.config = Object.assign({}, {
       endpoint: 0 === e.spaceId.indexOf("mp-") ? "https://api.next.bspapp.com" : "https://api.bspapp.com"
-    }, e), this.config.provider = "aliyun", this.config.requestUrl = this.config.endpoint + "/client", this.config.envType = this.config.envType || "public", this.config.accessTokenKey = "access_token_" + this.config.spaceId, this.adapter = se, this._getAccessTokenPromiseHub = new b({
+    }, e), this.config.provider = "aliyun", this.config.requestUrl = this.config.endpoint + "/client", this.config.envType = this.config.envType || "public", this.config.accessTokenKey = "access_token_" + this.config.spaceId, this.adapter = se, this._getAccessTokenPromiseHub = new I({
       createPromise: function createPromise() {
         return _this3.requestAuth(_this3.setupRequest({
           method: "serverless.auth.user.anonymousAuthorize",
@@ -10246,7 +10269,7 @@ var fe = /*#__PURE__*/function () {
   }, {
     key: "requestWrapped",
     value: function requestWrapped(e) {
-      return he.wrappedRequest(e, this.adapter.request);
+      return le.wrappedRequest(e, this.adapter.request);
     }
   }, {
     key: "requestAuth",
@@ -10277,7 +10300,7 @@ var fe = /*#__PURE__*/function () {
     key: "rebuildRequest",
     value: function rebuildRequest(e) {
       var t = Object.assign({}, e);
-      return t.data.token = this.accessToken, t.header["x-basement-token"] = this.accessToken, t.header["x-serverless-sign"] = he.sign(t.data, this.config.clientSecret), t;
+      return t.data.token = this.accessToken, t.header["x-basement-token"] = this.accessToken, t.header["x-serverless-sign"] = le.sign(t.data, this.config.clientSecret), t;
     }
   }, {
     key: "setupRequest",
@@ -10289,7 +10312,7 @@ var fe = /*#__PURE__*/function () {
         s = {
           "Content-Type": "application/json"
         };
-      return "auth" !== t && (n.token = this.accessToken, s["x-basement-token"] = this.accessToken), s["x-serverless-sign"] = he.sign(n, this.config.clientSecret), {
+      return "auth" !== t && (n.token = this.accessToken, s["x-basement-token"] = this.accessToken), s["x-serverless-sign"] = le.sign(n, this.config.clientSecret), {
         url: this.config.requestUrl,
         method: "POST",
         data: n,
@@ -10399,12 +10422,12 @@ var fe = /*#__PURE__*/function () {
     key: "uploadFile",
     value: function () {
       var _uploadFile = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2(_ref4) {
-        var e, t, _ref4$fileType, n, s, r, i, o, a, c, u, l, h, d, p, f, m, y, _e5, _;
+        var e, t, _ref4$fileType, n, _ref4$cloudPathAsReal, s, r, i, o, a, c, u, h, l, d, p, f, m, y, _, _e5, w;
         return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                e = _ref4.filePath, t = _ref4.cloudPath, _ref4$fileType = _ref4.fileType, n = _ref4$fileType === void 0 ? "image" : _ref4$fileType, s = _ref4.onUploadProgress, r = _ref4.config;
+                e = _ref4.filePath, t = _ref4.cloudPath, _ref4$fileType = _ref4.fileType, n = _ref4$fileType === void 0 ? "image" : _ref4$fileType, _ref4$cloudPathAsReal = _ref4.cloudPathAsRealPath, s = _ref4$cloudPathAsReal === void 0 ? !1 : _ref4$cloudPathAsReal, r = _ref4.onUploadProgress, i = _ref4.config;
                 if (!("string" !== g(t))) {
                   _context2.next = 3;
                   break;
@@ -10419,7 +10442,7 @@ var fe = /*#__PURE__*/function () {
                   break;
                 }
                 throw new ne({
-                  code: "CLOUDPATH_REQUIRED",
+                  code: "INVALID_PARAM",
                   message: "cloudPath不可为空"
                 });
               case 5:
@@ -10432,88 +10455,98 @@ var fe = /*#__PURE__*/function () {
                   message: "cloudPath不合法"
                 });
               case 7:
-                i = r && r.envType || this.config.envType;
-                _context2.next = 10;
-                return this.getOSSUploadOptionsFromPath({
-                  env: i,
-                  filename: t
+                o = i && i.envType || this.config.envType;
+                if (!(s && ("/" !== t[0] && (t = "/" + t), t.indexOf("\\") > -1))) {
+                  _context2.next = 10;
+                  break;
+                }
+                throw new ne({
+                  code: "INVALID_PARAM",
+                  message: "使用cloudPath作为路径时，cloudPath不可包含“\\”"
                 });
               case 10:
-                o = _context2.sent.result;
-                a = "https://" + o.cdnDomain + "/" + o.ossPath;
-                c = o.securityToken;
-                u = o.accessKeyId;
-                l = o.signature;
-                h = o.host;
-                d = o.ossPath;
-                p = o.id;
-                f = o.policy;
-                m = o.ossCallbackUrl;
-                y = {
+                _context2.next = 12;
+                return this.getOSSUploadOptionsFromPath({
+                  env: o,
+                  filename: s ? t.split("/").pop() : t,
+                  fileId: s ? t : void 0
+                });
+              case 12:
+                a = _context2.sent.result;
+                c = "https://" + a.cdnDomain + "/" + a.ossPath;
+                u = a.securityToken;
+                h = a.accessKeyId;
+                l = a.signature;
+                d = a.host;
+                p = a.ossPath;
+                f = a.id;
+                m = a.policy;
+                y = a.ossCallbackUrl;
+                _ = {
                   "Cache-Control": "max-age=2592000",
                   "Content-Disposition": "attachment",
-                  OSSAccessKeyId: u,
+                  OSSAccessKeyId: h,
                   Signature: l,
-                  host: h,
-                  id: p,
-                  key: d,
-                  policy: f,
+                  host: d,
+                  id: f,
+                  key: p,
+                  policy: m,
                   success_action_status: 200
                 };
-                if (c && (y["x-oss-security-token"] = c), m) {
+                if (u && (_["x-oss-security-token"] = u), y) {
                   _e5 = JSON.stringify({
-                    callbackUrl: m,
+                    callbackUrl: y,
                     callbackBody: JSON.stringify({
-                      fileId: p,
+                      fileId: f,
                       spaceId: this.config.spaceId
                     }),
                     callbackBodyType: "application/json"
                   });
-                  y.callback = he.toBase64(_e5);
+                  _.callback = le.toBase64(_e5);
                 }
-                _ = {
-                  url: "https://" + o.host,
-                  formData: y,
+                w = {
+                  url: "https://" + a.host,
+                  formData: _,
                   fileName: "file",
                   name: "file",
                   filePath: e,
                   fileType: n
                 };
-                _context2.next = 25;
-                return this.uploadFileToOSS(Object.assign({}, _, {
-                  onUploadProgress: s
+                _context2.next = 27;
+                return this.uploadFileToOSS(Object.assign({}, w, {
+                  onUploadProgress: r
                 }));
-              case 25:
-                if (!m) {
-                  _context2.next = 27;
+              case 27:
+                if (!y) {
+                  _context2.next = 29;
                   break;
                 }
                 return _context2.abrupt("return", {
                   success: !0,
                   filePath: e,
-                  fileID: a
-                });
-              case 27:
-                _context2.next = 29;
-                return this.reportOSSUpload({
-                  id: p
+                  fileID: c
                 });
               case 29:
+                _context2.next = 31;
+                return this.reportOSSUpload({
+                  id: f
+                });
+              case 31:
                 if (!_context2.sent.success) {
-                  _context2.next = 31;
+                  _context2.next = 33;
                   break;
                 }
                 return _context2.abrupt("return", {
                   success: !0,
                   filePath: e,
-                  fileID: a
+                  fileID: c
                 });
-              case 31:
+              case 33:
                 throw new ne({
                   code: "UPLOAD_FAILED",
                   message: "文件上传失败"
                 });
-              case 32:
+              case 34:
               case "end":
                 return _context2.stop();
             }
@@ -10643,11 +10676,11 @@ var we = function we() {
 function ve(e) {
   return void 0 === e;
 }
-function be(e) {
+function Ie(e) {
   return "[object Null]" === Object.prototype.toString.call(e);
 }
 var Se;
-function ke(e) {
+function be(e) {
   var t = (n = e, "[object Array]" === Object.prototype.toString.call(n) ? e : [e]);
   var n;
   var _iterator = _createForOfIteratorHelper(t),
@@ -10672,58 +10705,58 @@ function ke(e) {
 !function (e) {
   e.WEB = "web", e.WX_MP = "wx_mp";
 }(Se || (Se = {}));
-var Ie = {
+var ke = {
     adapter: null,
     runtime: void 0
   },
-  Te = ["anonymousUuidKey"];
-var Ce = /*#__PURE__*/function (_e8) {
-  (0, _inherits2.default)(Ce, _e8);
-  var _super2 = _createSuper(Ce);
-  function Ce() {
+  Ce = ["anonymousUuidKey"];
+var Te = /*#__PURE__*/function (_e8) {
+  (0, _inherits2.default)(Te, _e8);
+  var _super2 = _createSuper(Te);
+  function Te() {
     var _this6;
-    (0, _classCallCheck2.default)(this, Ce);
-    _this6 = _super2.call(this), Ie.adapter.root.tcbObject || (Ie.adapter.root.tcbObject = {});
+    (0, _classCallCheck2.default)(this, Te);
+    _this6 = _super2.call(this), ke.adapter.root.tcbObject || (ke.adapter.root.tcbObject = {});
     return _this6;
   }
-  (0, _createClass2.default)(Ce, [{
+  (0, _createClass2.default)(Te, [{
     key: "setItem",
     value: function setItem(e, t) {
-      Ie.adapter.root.tcbObject[e] = t;
+      ke.adapter.root.tcbObject[e] = t;
     }
   }, {
     key: "getItem",
     value: function getItem(e) {
-      return Ie.adapter.root.tcbObject[e];
+      return ke.adapter.root.tcbObject[e];
     }
   }, {
     key: "removeItem",
     value: function removeItem(e) {
-      delete Ie.adapter.root.tcbObject[e];
+      delete ke.adapter.root.tcbObject[e];
     }
   }, {
     key: "clear",
     value: function clear() {
-      delete Ie.adapter.root.tcbObject;
+      delete ke.adapter.root.tcbObject;
     }
   }]);
-  return Ce;
+  return Te;
 }(_e);
-function Ae(e, t) {
+function Pe(e, t) {
   switch (e) {
     case "local":
-      return t.localStorage || new Ce();
+      return t.localStorage || new Te();
     case "none":
-      return new Ce();
+      return new Te();
     default:
-      return t.sessionStorage || new Ce();
+      return t.sessionStorage || new Te();
   }
 }
-var Pe = /*#__PURE__*/function () {
-  function Pe(e) {
-    (0, _classCallCheck2.default)(this, Pe);
+var Ae = /*#__PURE__*/function () {
+  function Ae(e) {
+    (0, _classCallCheck2.default)(this, Ae);
     if (!this._storage) {
-      this._persistence = Ie.adapter.primaryStorage || e.persistence, this._storage = Ae(this._persistence, Ie.adapter);
+      this._persistence = ke.adapter.primaryStorage || e.persistence, this._storage = Pe(this._persistence, ke.adapter);
       var _t5 = "access_token_".concat(e.env),
         _n5 = "access_token_expire_".concat(e.env),
         _s5 = "refresh_token_".concat(e.env),
@@ -10740,18 +10773,18 @@ var Pe = /*#__PURE__*/function () {
       };
     }
   }
-  (0, _createClass2.default)(Pe, [{
+  (0, _createClass2.default)(Ae, [{
     key: "updatePersistence",
     value: function updatePersistence(e) {
       if (e === this._persistence) return;
       var t = "local" === this._persistence;
       this._persistence = e;
-      var n = Ae(e, Ie.adapter);
+      var n = Pe(e, ke.adapter);
       for (var _e9 in this.keys) {
         var _s6 = this.keys[_e9];
-        if (t && Te.includes(_e9)) continue;
+        if (t && Ce.includes(_e9)) continue;
         var _r2 = this._storage.getItem(_s6);
-        ve(_r2) || be(_r2) || (n.setItem(_s6, _r2), this._storage.removeItem(_s6));
+        ve(_r2) || Ie(_r2) || (n.setItem(_s6, _r2), this._storage.removeItem(_s6));
       }
       this._storage = n;
     }
@@ -10792,7 +10825,7 @@ var Pe = /*#__PURE__*/function () {
       this._storage.removeItem(e);
     }
   }]);
-  return Pe;
+  return Ae;
 }();
 var Ee = {},
   Oe = {};
@@ -10882,8 +10915,8 @@ function Fe(e, t) {
   Le.off(e, t);
 }
 var qe = "loginStateChanged",
-  Ke = "loginStateExpire",
-  Me = "loginTypeChanged",
+  Me = "loginStateExpire",
+  Ke = "loginTypeChanged",
   je = "anonymousConverted",
   Be = "refreshAccessToken";
 var $e;
@@ -10930,7 +10963,7 @@ var Ge = /*#__PURE__*/function () {
     var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     (0, _classCallCheck2.default)(this, Ge);
     var t;
-    this.config = e, this._reqClass = new Ie.adapter.reqClass({
+    this.config = e, this._reqClass = new ke.adapter.reqClass({
       timeout: this.config.timeout,
       timeoutMsg: "\u8BF7\u6C42\u5728".concat(this.config.timeout / 1e3, "s\u5185\u672A\u5B8C\u6210\uFF0C\u5DF2\u4E2D\u65AD"),
       restrictedMethods: ["post"]
@@ -11100,7 +11133,7 @@ var Ge = /*#__PURE__*/function () {
                 _s8 = _context8.sent;
                 return _context8.abrupt("return", (this.setRefreshToken(_s8.refresh_token), this._refreshAccessToken()));
               case 19:
-                De(Ke), this._cache.removeStore(n);
+                De(Me), this._cache.removeStore(n);
               case 20:
                 throw new ne({
                   code: a.data.code,
@@ -11185,7 +11218,7 @@ var Ge = /*#__PURE__*/function () {
     key: "request",
     value: function () {
       var _request = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee10(e, t, n) {
-        var s, r, i, _e14, o, _e15, _e16, a, c, u, l, h, d, p, f, g;
+        var s, r, i, _e14, o, _e15, _e16, a, c, u, h, l, d, p, f, g;
         return _regenerator.default.wrap(function _callee10$(_context10) {
           while (1) {
             switch (_context10.prev = _context10.next) {
@@ -11232,11 +11265,11 @@ var Ge = /*#__PURE__*/function () {
                 n && n.onUploadProgress && (a.onUploadProgress = n.onUploadProgress);
                 c = this._localCache.getStore(s);
                 c && (a.headers["X-TCB-Trace"] = c);
-                u = t.parse, l = t.inQuery, h = t.search;
+                u = t.parse, h = t.inQuery, l = t.search;
                 d = {
                   env: this.config.env
                 };
-                u && (d.parse = !0), l && (d = _objectSpread(_objectSpread({}, l), d));
+                u && (d.parse = !0), h && (d = _objectSpread(_objectSpread({}, h), d));
                 p = function (e, t) {
                   var n = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
                   var s = /\?/.test(t);
@@ -11246,7 +11279,7 @@ var Ge = /*#__PURE__*/function () {
                   }
                   return /^http(s)?\:\/\//.test(t += r) ? t : "".concat(e).concat(t);
                 }(me, "//tcb-api.tencentcloudapi.com/web", d);
-                h && (p += h);
+                l && (p += l);
                 _context10.next = 22;
                 return this.post(_objectSpread({
                   url: p,
@@ -11688,7 +11721,7 @@ var et = /*#__PURE__*/function (_Qe) {
                 return this._request.refreshAccessToken();
               case 14:
                 De(qe);
-                De(Me, {
+                De(Ke, {
                   env: this.config.env,
                   loginType: $e.ANONYMOUS,
                   persistence: "local"
@@ -11748,7 +11781,7 @@ var et = /*#__PURE__*/function (_Qe) {
                 De(je, {
                   env: this.config.env
                 });
-                De(Me, {
+                De(Ke, {
                   loginType: $e.CUSTOM,
                   persistence: "local"
                 });
@@ -11831,7 +11864,7 @@ var tt = /*#__PURE__*/function (_Qe2) {
                 return this._request.refreshAccessToken();
               case 10:
                 De(qe);
-                De(Me, {
+                De(Ke, {
                   env: this.config.env,
                   loginType: $e.CUSTOM,
                   persistence: this.config.persistence
@@ -11917,7 +11950,7 @@ var nt = /*#__PURE__*/function (_Qe3) {
                 return this.refreshUserInfo();
               case 19:
                 De(qe);
-                De(Me, {
+                De(Ke, {
                   env: this.config.env,
                   loginType: $e.EMAIL,
                   persistence: this.config.persistence
@@ -12051,7 +12084,7 @@ var st = /*#__PURE__*/function (_Qe4) {
                 return this.refreshUserInfo();
               case 20:
                 De(qe);
-                De(Me, {
+                De(Ke, {
                   env: this.config.env,
                   loginType: $e.USERNAME,
                   persistence: this.config.persistence
@@ -12082,7 +12115,7 @@ var st = /*#__PURE__*/function (_Qe4) {
 var rt = /*#__PURE__*/function () {
   function rt(e) {
     (0, _classCallCheck2.default)(this, rt);
-    this.config = e, this._cache = xe(e.env), this._request = Ye(e.env), this._onAnonymousConverted = this._onAnonymousConverted.bind(this), this._onLoginTypeChanged = this._onLoginTypeChanged.bind(this), Ne(Me, this._onLoginTypeChanged);
+    this.config = e, this._cache = xe(e.env), this._request = Ye(e.env), this._onAnonymousConverted = this._onAnonymousConverted.bind(this), this._onLoginTypeChanged = this._onLoginTypeChanged.bind(this), Ne(Ke, this._onLoginTypeChanged);
   }
   (0, _createClass2.default)(rt, [{
     key: "currentUser",
@@ -12217,7 +12250,7 @@ var rt = /*#__PURE__*/function () {
                 });
               case 7:
                 r = _context26.sent;
-                return _context26.abrupt("return", (this._cache.removeStore(e), this._cache.removeStore(t), this._cache.removeStore(n), De(qe), De(Me, {
+                return _context26.abrupt("return", (this._cache.removeStore(e), this._cache.removeStore(t), this._cache.removeStore(n), De(qe), De(Ke, {
                   env: this.config.env,
                   loginType: $e.NULL,
                   persistence: this.config.persistence
@@ -12295,7 +12328,7 @@ var rt = /*#__PURE__*/function () {
   }, {
     key: "onLoginStateExpired",
     value: function onLoginStateExpired(e) {
-      Ne(Ke, e.bind(this));
+      Ne(Me, e.bind(this));
     }
   }, {
     key: "onAccessTokenRefreshed",
@@ -12311,7 +12344,7 @@ var rt = /*#__PURE__*/function () {
     key: "onLoginTypeChanged",
     value: function onLoginTypeChanged(e) {
       var _this10 = this;
-      Ne(Me, function () {
+      Ne(Ke, function () {
         var t = _this10.hasLoginState();
         e.call(_this10, t);
       });
@@ -12473,13 +12506,13 @@ var it = function it(e, t) {
         a = _e$data2.url,
         c = _e$data2.authorization,
         u = _e$data2.token,
-        l = _e$data2.fileId,
-        h = _e$data2.cosFileId,
+        h = _e$data2.fileId,
+        l = _e$data2.cosFileId,
         d = e.requestId,
         p = {
           key: s,
           signature: c,
-          "x-cos-meta-fileid": h,
+          "x-cos-meta-fileid": l,
           success_action_status: "201",
           "x-cos-security-token": u
         };
@@ -12492,7 +12525,7 @@ var it = function it(e, t) {
         onUploadProgress: i
       }).then(function (e) {
         201 === e.statusCode ? t(null, {
-          fileID: l,
+          fileID: h,
           requestId: d
         }) : t(new ne({
           code: "STORAGE_REQUEST_FAIL",
@@ -12646,7 +12679,7 @@ var it = function it(e, t) {
       return _ref10.apply(this, arguments);
     };
   }(),
-  lt = function lt(_ref11, i) {
+  ht = function ht(_ref11, i) {
     var e = _ref11.name,
       t = _ref11.data,
       n = _ref11.query,
@@ -12692,7 +12725,7 @@ var it = function it(e, t) {
       o(e);
     }), o.promise;
   },
-  ht = {
+  lt = {
     timeout: 15e3,
     persistence: "session"
   },
@@ -12705,10 +12738,10 @@ var pt = /*#__PURE__*/function () {
   (0, _createClass2.default)(pt, [{
     key: "init",
     value: function init(e) {
-      switch (Ie.adapter || (this.requestClient = new Ie.adapter.reqClass({
+      switch (ke.adapter || (this.requestClient = new ke.adapter.reqClass({
         timeout: e.timeout || 5e3,
         timeoutMsg: "\u8BF7\u6C42\u5728".concat((e.timeout || 5e3) / 1e3, "s\u5185\u672A\u5B8C\u6210\uFF0C\u5DF2\u4E2D\u65AD")
-      })), this.config = _objectSpread(_objectSpread({}, ht), e), !0) {
+      })), this.config = _objectSpread(_objectSpread({}, lt), e), !0) {
         case this.config.timeout > 6e5:
           console.warn("timeout大于可配置上限[10分钟]，已重置为上限数值"), this.config.timeout = 6e5;
           break;
@@ -12723,11 +12756,11 @@ var pt = /*#__PURE__*/function () {
       var _ref12 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         e = _ref12.persistence;
       if (this.authObj) return this.authObj;
-      var t = e || Ie.adapter.primaryStorage || ht.persistence;
+      var t = e || ke.adapter.primaryStorage || lt.persistence;
       var n;
       return t !== this.config.persistence && (this.config.persistence = t), function (e) {
         var t = e.env;
-        Ee[t] = new Pe(e), Oe[t] = new Pe(_objectSpread(_objectSpread({}, e), {}, {
+        Ee[t] = new Ae(e), Oe[t] = new Ae(_objectSpread(_objectSpread({}, e), {}, {
           persistence: "local"
         }));
       }(this.config), n = this.config, Ve[n.env] = new Ge(n), this.authObj = new rt(this.config), this.authObj;
@@ -12745,7 +12778,7 @@ var pt = /*#__PURE__*/function () {
   }, {
     key: "callFunction",
     value: function callFunction(e, t) {
-      return lt.apply(this, [e, t]);
+      return ht.apply(this, [e, t]);
     }
   }, {
     key: "deleteFile",
@@ -12814,10 +12847,10 @@ var pt = /*#__PURE__*/function () {
   }, {
     key: "useAdapters",
     value: function useAdapters(e) {
-      var _ref13 = ke(e) || {},
+      var _ref13 = be(e) || {},
         t = _ref13.adapter,
         n = _ref13.runtime;
-      t && (Ie.adapter = t), n && (Ie.runtime = n);
+      t && (ke.adapter = t), n && (ke.runtime = n);
     }
   }]);
   return pt;
@@ -12951,7 +12984,7 @@ wt.init = function (e) {
     }), t;
   }, t.customAuth = t.auth, t;
 };
-var bt = wt;
+var It = wt;
 var St = /*#__PURE__*/function (_fe) {
   (0, _inherits2.default)(St, _fe);
   var _super8 = _createSuper(St);
@@ -12978,8 +13011,8 @@ var St = /*#__PURE__*/function (_fe) {
         s = {
           "Content-Type": "application/json"
         };
-      "auth" !== t && (n.token = this.accessToken, s["x-basement-token"] = this.accessToken), s["x-serverless-sign"] = he.sign(n, this.config.clientSecret);
-      var r = le();
+      "auth" !== t && (n.token = this.accessToken, s["x-basement-token"] = this.accessToken), s["x-serverless-sign"] = le.sign(n, this.config.clientSecret);
+      var r = he();
       s["x-client-info"] = encodeURIComponent(JSON.stringify(r));
       var _re = re(),
         i = _re.token;
@@ -13129,7 +13162,7 @@ var St = /*#__PURE__*/function (_fe) {
   }]);
   return St;
 }(fe);
-var kt = {
+var bt = {
   init: function init(e) {
     var t = new St(e),
       n = {
@@ -13145,10 +13178,10 @@ var kt = {
     }, t.customAuth = t.auth, t;
   }
 };
-function It(_ref18) {
+function kt(_ref18) {
   var e = _ref18.data;
   var t;
-  t = le();
+  t = he();
   var n = JSON.parse(JSON.stringify(e || {}));
   if (Object.assign(n, {
     clientInfo: t
@@ -13159,13 +13192,13 @@ function It(_ref18) {
   }
   return n;
 }
-function Tt() {
-  return _Tt.apply(this, arguments);
+function Ct() {
+  return _Ct.apply(this, arguments);
 }
-function _Tt() {
-  _Tt = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee53() {
-    var _this23 = this;
-    var _ref55,
+function _Ct() {
+  _Ct = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee54() {
+    var _this26 = this;
+    var _ref60,
       e,
       t,
       _this$__dev__,
@@ -13175,26 +13208,26 @@ function _Tt() {
       i,
       o,
       a,
-      _args5 = arguments;
-    return _regenerator.default.wrap(function _callee53$(_context53) {
+      _args6 = arguments;
+    return _regenerator.default.wrap(function _callee54$(_context54) {
       while (1) {
-        switch (_context53.prev = _context53.next) {
+        switch (_context54.prev = _context54.next) {
           case 0:
-            _ref55 = _args5.length > 0 && _args5[0] !== undefined ? _args5[0] : {}, e = _ref55.name, t = _ref55.data;
-            _context53.next = 3;
+            _ref60 = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : {}, e = _ref60.name, t = _ref60.data;
+            _context54.next = 3;
             return this.__dev__.initLocalNetwork();
           case 3:
             _this$__dev__ = this.__dev__, n = _this$__dev__.localAddress, s = _this$__dev__.localPort, r = {
               aliyun: "aliyun",
               tencent: "tcb"
             }[this.config.provider], i = this.config.spaceId, o = "http://".concat(n, ":").concat(s, "/system/check-function"), a = "http://".concat(n, ":").concat(s, "/cloudfunctions/").concat(e);
-            return _context53.abrupt("return", new Promise(function (t, n) {
+            return _context54.abrupt("return", new Promise(function (t, n) {
               se.request({
                 method: "POST",
                 url: o,
                 data: {
                   name: e,
-                  platform: A,
+                  platform: P,
                   provider: r,
                   spaceId: i
                 },
@@ -13212,18 +13245,18 @@ function _Tt() {
                 }
               });
             }).then(function () {
-              var _ref56 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-                e = _ref56.data;
-              var _ref57 = e || {},
-                t = _ref57.code,
-                n = _ref57.message;
+              var _ref61 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+                e = _ref61.data;
+              var _ref62 = e || {},
+                t = _ref62.code,
+                n = _ref62.message;
               return {
                 code: 0 === t ? 0 : t || "SYS_ERR",
                 message: n || "SYS_ERR"
               };
-            }).then(function (_ref58) {
-              var n = _ref58.code,
-                s = _ref58.message;
+            }).then(function (_ref63) {
+              var n = _ref63.code,
+                s = _ref63.message;
               if (0 !== n) {
                 switch (n) {
                   case "MODULE_ENCRYPTED":
@@ -13237,24 +13270,24 @@ function _Tt() {
                     break;
                   case "NETWORK_ERROR":
                     {
-                      var _e29 = "连接本地调试服务失败，请检查客户端是否和主机在同一局域网下";
-                      throw console.error(_e29), new Error(_e29);
+                      var _e31 = "连接本地调试服务失败，请检查客户端是否和主机在同一局域网下";
+                      throw console.error(_e31), new Error(_e31);
                     }
                   case "SWITCH_TO_CLOUD":
                     break;
                   default:
                     {
-                      var _e30 = "\u68C0\u6D4B\u672C\u5730\u8C03\u8BD5\u670D\u52A1\u51FA\u73B0\u9519\u8BEF\uFF1A".concat(s, "\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u73AF\u5883\u6216\u91CD\u542F\u5BA2\u6237\u7AEF\u518D\u8BD5");
-                      throw console.error(_e30), new Error(_e30);
+                      var _e32 = "\u68C0\u6D4B\u672C\u5730\u8C03\u8BD5\u670D\u52A1\u51FA\u73B0\u9519\u8BEF\uFF1A".concat(s, "\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u73AF\u5883\u6216\u91CD\u542F\u5BA2\u6237\u7AEF\u518D\u8BD5");
+                      throw console.error(_e32), new Error(_e32);
                     }
                 }
-                return _this23._callCloudFunction({
+                return _this26._callCloudFunction({
                   name: e,
                   data: t
                 });
               }
               return new Promise(function (e, n) {
-                var s = It.call(_this23, {
+                var s = kt.call(_this26, {
                   data: t
                 });
                 se.request({
@@ -13262,13 +13295,13 @@ function _Tt() {
                   url: a,
                   data: {
                     provider: r,
-                    platform: A,
+                    platform: P,
                     param: s
                   },
                   success: function success() {
-                    var _ref59 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-                      t = _ref59.statusCode,
-                      s = _ref59.data;
+                    var _ref64 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+                      t = _ref64.statusCode,
+                      s = _ref64.data;
                     return !t || t >= 400 ? n(new ne({
                       code: s.code || "SYS_ERR",
                       message: s.message || "request:fail"
@@ -13287,22 +13320,22 @@ function _Tt() {
             }));
           case 5:
           case "end":
-            return _context53.stop();
+            return _context54.stop();
         }
       }
-    }, _callee53, this);
+    }, _callee54, this);
   }));
-  return _Tt.apply(this, arguments);
+  return _Ct.apply(this, arguments);
 }
-var Ct = [{
+var Tt = [{
   rule: /fc_function_not_found|FUNCTION_NOT_FOUND/,
   content: "，云函数[{functionName}]在云端不存在，请检查此云函数名称是否正确以及该云函数是否已上传到服务空间",
   mode: "append"
 }];
-var At = /[\\^$.*+?()[\]{}|]/g,
-  Pt = RegExp(At.source);
+var Pt = /[\\^$.*+?()[\]{}|]/g,
+  At = RegExp(Pt.source);
 function Et(e, t, n) {
-  return e.replace(new RegExp((s = t) && Pt.test(s) ? s.replace(At, "\\$&") : s, "g"), n);
+  return e.replace(new RegExp((s = t) && At.test(s) ? s.replace(Pt, "\\$&") : s, "g"), n);
   var s;
 }
 var Ot = "none",
@@ -13544,10 +13577,10 @@ function Ft(e, t) {
 function qt(e) {
   return new Uint8Array(e);
 }
-function Kt(e, t, n, s, r) {
+function Mt(e, t, n, s, r) {
   null == s && null == r || (e = e.slice ? e.slice(s, r) : Array.prototype.slice.call(e, s, r)), t.set(e, n);
 }
-var Mt,
+var Kt,
   jt = {
     toBytes: function toBytes(e) {
       var t = [],
@@ -13566,7 +13599,7 @@ var Mt,
       return t.join("");
     }
   },
-  Bt = (Mt = "0123456789abcdef", {
+  Bt = (Kt = "0123456789abcdef", {
     toBytes: function toBytes(e) {
       for (var t = [], n = 0; n < e.length; n += 2) {
         t.push(parseInt(e.substr(n, 2), 16));
@@ -13576,7 +13609,7 @@ var Mt,
     fromBytes: function fromBytes(e) {
       for (var t = [], n = 0; n < e.length; n++) {
         var s = e[n];
-        t.push(Mt[(240 & s) >> 4] + Mt[15 & s]);
+        t.push(Kt[(240 & s) >> 4] + Kt[15 & s]);
       }
       return t.join("");
     }
@@ -13644,12 +13677,12 @@ var an = /*#__PURE__*/function () {
           }
         }
         for (t = 0; t < r && c < s;) {
-          u = c >> 2, l = c % 4, this._Ke[u][l] = i[t], this._Kd[e - u][l] = i[t++], c++;
+          u = c >> 2, h = c % 4, this._Ke[u][h] = i[t], this._Kd[e - u][h] = i[t++], c++;
         }
       }
       for (var u = 1; u < e; u++) {
-        for (var l = 0; l < 4; l++) {
-          o = this._Kd[u][l], this._Kd[u][l] = tn[o >> 24 & 255] ^ nn[o >> 16 & 255] ^ sn[o >> 8 & 255] ^ rn[255 & o];
+        for (var h = 0; h < 4; h++) {
+          o = this._Kd[u][h], this._Kd[u][h] = tn[o >> 24 & 255] ^ nn[o >> 16 & 255] ^ sn[o >> 8 & 255] ^ rn[255 & o];
         }
       }
     }
@@ -13707,7 +13740,7 @@ var cn = /*#__PURE__*/function () {
     value: function encrypt(e) {
       if ((e = Ft(e)).length % 16 != 0) throw new Error("invalid plaintext size (must be multiple of 16 bytes)");
       for (var t = qt(e.length), n = qt(16), s = 0; s < e.length; s += 16) {
-        Kt(e, n, 0, s, s + 16), Kt(n = this._aes.encrypt(n), t, s);
+        Mt(e, n, 0, s, s + 16), Mt(n = this._aes.encrypt(n), t, s);
       }
       return t;
     }
@@ -13716,7 +13749,7 @@ var cn = /*#__PURE__*/function () {
     value: function decrypt(e) {
       if ((e = Ft(e)).length % 16 != 0) throw new Error("invalid ciphertext size (must be multiple of 16 bytes)");
       for (var t = qt(e.length), n = qt(16), s = 0; s < e.length; s += 16) {
-        Kt(e, n, 0, s, s + 16), Kt(n = this._aes.decrypt(n), t, s);
+        Mt(e, n, 0, s, s + 16), Mt(n = this._aes.decrypt(n), t, s);
       }
       return t;
     }
@@ -13737,11 +13770,11 @@ var un = /*#__PURE__*/function () {
     value: function encrypt(e) {
       if ((e = Ft(e)).length % 16 != 0) throw new Error("invalid plaintext size (must be multiple of 16 bytes)");
       for (var t = qt(e.length), n = qt(16), s = 0; s < e.length; s += 16) {
-        Kt(e, n, 0, s, s + 16);
+        Mt(e, n, 0, s, s + 16);
         for (var r = 0; r < 16; r++) {
           n[r] ^= this._lastCipherblock[r];
         }
-        this._lastCipherblock = this._aes.encrypt(n), Kt(this._lastCipherblock, t, s);
+        this._lastCipherblock = this._aes.encrypt(n), Mt(this._lastCipherblock, t, s);
       }
       return t;
     }
@@ -13750,27 +13783,27 @@ var un = /*#__PURE__*/function () {
     value: function decrypt(e) {
       if ((e = Ft(e)).length % 16 != 0) throw new Error("invalid ciphertext size (must be multiple of 16 bytes)");
       for (var t = qt(e.length), n = qt(16), s = 0; s < e.length; s += 16) {
-        Kt(e, n, 0, s, s + 16), n = this._aes.decrypt(n);
+        Mt(e, n, 0, s, s + 16), n = this._aes.decrypt(n);
         for (var r = 0; r < 16; r++) {
           t[s + r] = n[r] ^ this._lastCipherblock[r];
         }
-        Kt(e, this._lastCipherblock, 0, s, s + 16);
+        Mt(e, this._lastCipherblock, 0, s, s + 16);
       }
       return t;
     }
   }]);
   return un;
 }();
-var ln = /*#__PURE__*/function () {
-  function ln(e, t, n) {
-    (0, _classCallCheck2.default)(this, ln);
-    if (!(this instanceof ln)) throw Error("AES must be instanitated with `new`");
+var hn = /*#__PURE__*/function () {
+  function hn(e, t, n) {
+    (0, _classCallCheck2.default)(this, hn);
+    if (!(this instanceof hn)) throw Error("AES must be instanitated with `new`");
     if (this.description = "Cipher Feedback", this.name = "cfb", t) {
       if (16 != t.length) throw new Error("invalid initialation vector size (must be 16 size)");
     } else t = qt(16);
     n || (n = 1), this.segmentSize = n, this._shiftRegister = Ft(t, !0), this._aes = new an(e);
   }
-  (0, _createClass2.default)(ln, [{
+  (0, _createClass2.default)(hn, [{
     key: "encrypt",
     value: function encrypt(e) {
       if (e.length % this.segmentSize != 0) throw new Error("invalid plaintext size (must be segmentSize bytes)");
@@ -13779,7 +13812,7 @@ var ln = /*#__PURE__*/function () {
         for (var r = 0; r < this.segmentSize; r++) {
           n[s + r] ^= t[r];
         }
-        Kt(this._shiftRegister, this._shiftRegister, 0, this.segmentSize), Kt(n, this._shiftRegister, 16 - this.segmentSize, s, s + this.segmentSize);
+        Mt(this._shiftRegister, this._shiftRegister, 0, this.segmentSize), Mt(n, this._shiftRegister, 16 - this.segmentSize, s, s + this.segmentSize);
       }
       return n;
     }
@@ -13792,23 +13825,23 @@ var ln = /*#__PURE__*/function () {
         for (var r = 0; r < this.segmentSize; r++) {
           n[s + r] ^= t[r];
         }
-        Kt(this._shiftRegister, this._shiftRegister, 0, this.segmentSize), Kt(e, this._shiftRegister, 16 - this.segmentSize, s, s + this.segmentSize);
+        Mt(this._shiftRegister, this._shiftRegister, 0, this.segmentSize), Mt(e, this._shiftRegister, 16 - this.segmentSize, s, s + this.segmentSize);
       }
       return n;
     }
   }]);
-  return ln;
+  return hn;
 }();
-var hn = /*#__PURE__*/function () {
-  function hn(e, t) {
-    (0, _classCallCheck2.default)(this, hn);
-    if (!(this instanceof hn)) throw Error("AES must be instanitated with `new`");
+var ln = /*#__PURE__*/function () {
+  function ln(e, t) {
+    (0, _classCallCheck2.default)(this, ln);
+    if (!(this instanceof ln)) throw Error("AES must be instanitated with `new`");
     if (this.description = "Output Feedback", this.name = "ofb", t) {
       if (16 != t.length) throw new Error("invalid initialation vector size (must be 16 bytes)");
     } else t = qt(16);
     this._lastPrecipher = Ft(t, !0), this._lastPrecipherIndex = 16, this._aes = new an(e);
   }
-  (0, _createClass2.default)(hn, [{
+  (0, _createClass2.default)(ln, [{
     key: "encrypt",
     value: function encrypt(e) {
       for (var t = Ft(e, !0), n = 0; n < t.length; n++) {
@@ -13822,7 +13855,7 @@ var hn = /*#__PURE__*/function () {
       return this.encrypt(e);
     }
   }]);
-  return hn;
+  return ln;
 }();
 var dn = /*#__PURE__*/function () {
   function dn(e) {
@@ -13887,8 +13920,8 @@ var fn = {
   ModeOfOperation: {
     ecb: cn,
     cbc: un,
-    cfb: ln,
-    ofb: hn,
+    cfb: hn,
+    ofb: ln,
     ctr: pn
   },
   utils: {
@@ -13900,7 +13933,7 @@ var fn = {
       pad: function pad(e) {
         var t = 16 - (e = Ft(e, !0)).length % 16,
           n = qt(e.length + t);
-        Kt(e, n);
+        Mt(e, n);
         for (var s = e.length; s < n.length; s++) {
           n[s] = t;
         }
@@ -13914,14 +13947,14 @@ var fn = {
           if (e[n + s] !== t) throw new Error("PKCS#7 invalid padding byte");
         }
         var r = qt(n);
-        return Kt(e, r, 0, 0, n), r;
+        return Mt(e, r, 0, 0, n), r;
       }
     }
   },
   _arrayTest: {
     coerceArray: Ft,
     createArray: qt,
-    copyArray: Kt
+    copyArray: Mt
   }
 };
 function gn(e, t, n) {
@@ -13967,19 +14000,19 @@ function vn(e) {
     cause: a
   });
 }
-var bn,
+var In,
   Sn,
-  kn = null;
-var In = /*#__PURE__*/function (_Lt) {
-  (0, _inherits2.default)(In, _Lt);
-  var _super9 = _createSuper(In);
-  function In(e) {
+  bn = null;
+var kn = /*#__PURE__*/function (_Lt) {
+  (0, _inherits2.default)(kn, _Lt);
+  var _super9 = _createSuper(kn);
+  function kn(e) {
     var _this14;
-    (0, _classCallCheck2.default)(this, In);
+    (0, _classCallCheck2.default)(this, kn);
     _this14 = _super9.call(this, e), _this14.clientType = "mp-weixin", _this14.userEncryptKey = null;
     return _this14;
   }
-  (0, _createClass2.default)(In, [{
+  (0, _createClass2.default)(kn, [{
     key: "isLogin",
     value: function isLogin() {
       return !!this.scopedGlobalCache.mpWeixinCode || !!this.scopedGlobalCache.mpWeixinOpenid;
@@ -14038,21 +14071,21 @@ var In = /*#__PURE__*/function (_Lt) {
                 }
                 return _context39.abrupt("return", this.userEncryptKey);
               case 2:
-                if (!(kn && kn.expireTime)) {
+                if (!(bn && bn.expireTime)) {
                   _context39.next = 6;
                   break;
                 }
                 e = Date.now();
-                if (!(kn.expireTime - e > 0)) {
+                if (!(bn.expireTime - e > 0)) {
                   _context39.next = 6;
                   break;
                 }
-                return _context39.abrupt("return", (this.userEncryptKey = kn, this.userEncryptKey));
+                return _context39.abrupt("return", (this.userEncryptKey = bn, this.userEncryptKey));
               case 6:
                 return _context39.abrupt("return", new Promise(function (e, t) {
                   uni.getUserCryptoManager().getLatestUserKey({
                     success: function success(t) {
-                      kn = t, _this15.userEncryptKey = t, e(_this15.userEncryptKey);
+                      bn = t, _this15.userEncryptKey = t, e(_this15.userEncryptKey);
                     },
                     fail: function fail(e) {
                       t(vn(_objectSpread(_objectSpread({}, _n), {}, {
@@ -14209,9 +14242,9 @@ var In = /*#__PURE__*/function (_Lt) {
       return !1;
     }
   }]);
-  return In;
+  return kn;
 }(Lt);
-function Tn(e) {
+function Cn(e) {
   var t = ["hasClientKey", "encryptGetClientKeyPayload", "setClientKey", "encrypt", "decrypt"],
     n = {};
   var _loop = function _loop(_s10) {
@@ -14245,16 +14278,16 @@ function Tn(e) {
   }
   return n;
 }
-var Cn = /*#__PURE__*/function (_Lt2) {
-  (0, _inherits2.default)(Cn, _Lt2);
-  var _super10 = _createSuper(Cn);
-  function Cn(e) {
+var Tn = /*#__PURE__*/function (_Lt2) {
+  (0, _inherits2.default)(Tn, _Lt2);
+  var _super10 = _createSuper(Tn);
+  function Tn(e) {
     var _this16;
-    (0, _classCallCheck2.default)(this, Cn);
-    _this16 = _super10.call(this, e), _this16.clientType = "app", _this16.appUtils = _objectSpread({}, Tn(uni.requireNativePlugin("plus"))), _this16.systemInfo = bn || (bn = ce());
+    (0, _classCallCheck2.default)(this, Tn);
+    _this16 = _super10.call(this, e), _this16.clientType = "app", _this16.appUtils = _objectSpread({}, Cn(uni.requireNativePlugin("plus"))), _this16.systemInfo = In || (In = ce());
     return _this16;
   }
-  (0, _createClass2.default)(Cn, [{
+  (0, _createClass2.default)(Tn, [{
     key: "hasClientKey",
     value: function () {
       var _hasClientKey = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee43() {
@@ -14546,19 +14579,19 @@ var Cn = /*#__PURE__*/function (_Lt2) {
       return 70009 === t.errCode && "uni-secure-network" === t.errSubject;
     }
   }]);
-  return Cn;
+  return Tn;
 }(Lt);
-function An() {
+function Pn() {
   var _ref29 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
     e = _ref29.secretType;
   return e === xt || e === Rt || e === Ut;
 }
-function Pn() {
+function An() {
   var _ref30 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
     e = _ref30.name,
     _ref30$data = _ref30.data,
     t = _ref30$data === void 0 ? {} : _ref30$data;
-  return "app" === A && "DCloud-clientDB" === e && "encryption" === t.redirectTo && "getAppClientKey" === t.action;
+  return "app" === P && "DCloud-clientDB" === e && "encryption" === t.redirectTo && "getAppClientKey" === t.action;
 }
 function En() {
   var _ref31 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
@@ -14575,7 +14608,7 @@ function En() {
     var _ref32 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
       e = _ref32.provider,
       t = _ref32.spaceId;
-    var n = C;
+    var n = T;
     if (!n) return {};
     e = function (e) {
       return "tencent" === e ? "tcb" : e;
@@ -14592,7 +14625,7 @@ function En() {
   var c = a.accessControl.function || {},
     u = Object.keys(c);
   if (0 === u.length) return !0;
-  var l = function (e, t) {
+  var h = function (e, t) {
     var n, s, r;
     for (var _i2 = 0; _i2 < e.length; _i2++) {
       var _o2 = e[_i2];
@@ -14602,8 +14635,8 @@ function En() {
     }
     return n || s || r;
   }(u, n);
-  if (!l) return !1;
-  if ((c[l] || []).find(function () {
+  if (!h) return !1;
+  if ((c[h] || []).find(function () {
     var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     return e.appId === s && (e.platform || "").toLowerCase() === o.toLowerCase();
   })) return !0;
@@ -14613,7 +14646,7 @@ function On(_ref33) {
   var e = _ref33.functionName,
     t = _ref33.result,
     n = _ref33.logPvd;
-  if (k && this.__dev__.debugLog && t && t.requestId) {
+  if (b && this.__dev__.debugLog && t && t.requestId) {
     var _s11 = JSON.stringify({
       spaceId: this.config.spaceId,
       functionName: e,
@@ -14627,7 +14660,7 @@ function xn(e) {
     n = function n(_n7) {
       var _this18 = this;
       var s = _n7.name;
-      _n7.data = It.call(e, {
+      _n7.data = kt.call(e, {
         data: _n7.data
       });
       var r = {
@@ -14635,8 +14668,8 @@ function xn(e) {
           tencent: "tcb",
           tcb: "tcb"
         }[this.config.provider],
-        i = An(_n7),
-        o = Pn(_n7),
+        i = Pn(_n7),
+        o = An(_n7),
         a = i || o;
       return t.call(this, _n7).then(function (e) {
         return e.errCode = 0, !a && On.call(_this18, {
@@ -14676,7 +14709,7 @@ function xn(e) {
           return e;
         }({
           message: "[".concat(_n7.name, "]: ").concat(e.message),
-          formatter: Ct,
+          formatter: Tt,
           extraInfo: {
             functionName: s
           }
@@ -14689,12 +14722,12 @@ function xn(e) {
       r = _e$config.spaceId,
       i = t.name;
     var o, a;
-    if (t.data = t.data || {}, k && e.__dev__.debugInfo && !e.__dev__.debugInfo.forceRemote && E ? (e._callCloudFunction || (e._callCloudFunction = n, e._callLocalFunction = Tt), o = Tt) : o = n, o = o.bind(e), Pn(t)) a = n.call(e, t);else if (function (_ref35) {
+    if (t.data = t.data || {}, b && e.__dev__.debugInfo && !e.__dev__.debugInfo.forceRemote && E ? (e._callCloudFunction || (e._callCloudFunction = n, e._callLocalFunction = Ct), o = Ct) : o = n, o = o.bind(e), An(t)) a = n.call(e, t);else if (function (_ref35) {
       var e = _ref35.name,
         _ref35$data = _ref35.data,
         t = _ref35$data === void 0 ? {} : _ref35$data;
-      return "mp-weixin" === A && "uni-id-co" === e && "secureNetworkHandshakeByWeixin" === t.method;
-    }(t)) a = o.call(e, t);else if (An(t)) {
+      return "mp-weixin" === P && "uni-id-co" === e && "secureNetworkHandshakeByWeixin" === t.method;
+    }(t)) a = o.call(e, t);else if (Pn(t)) {
       a = new Sn({
         secretType: t.secretType,
         uniCloudIns: e
@@ -14716,19 +14749,19 @@ function xn(e) {
     }), a;
   };
 }
-Sn = "mp-weixin" !== A && "app" !== A ? /*#__PURE__*/function () {
+Sn = "mp-weixin" !== P && "app" !== P ? /*#__PURE__*/function () {
   function _class2() {
     (0, _classCallCheck2.default)(this, _class2);
     throw vn({
-      message: "Platform ".concat(A, " is not supported by secure network")
+      message: "Platform ".concat(P, " is not supported by secure network")
     });
   }
   return (0, _createClass2.default)(_class2);
-}() : T ? "mp-weixin" === A ? In : Cn : /*#__PURE__*/function () {
+}() : C ? "mp-weixin" === P ? kn : Tn : /*#__PURE__*/function () {
   function _class3() {
     (0, _classCallCheck2.default)(this, _class3);
     throw vn({
-      message: "Platform ".concat(A, " is not enabled, please check whether secure network module is enabled in your manifest.json")
+      message: "Platform ".concat(P, " is not enabled, please check whether secure network module is enabled in your manifest.json")
     });
   }
   return (0, _createClass2.default)(_class3);
@@ -14791,12 +14824,12 @@ function Fn(e) {
 function qn(e) {
   return e && e.content && e.content.$method;
 }
-var Kn = /*#__PURE__*/function () {
-  function Kn(e, t, n) {
-    (0, _classCallCheck2.default)(this, Kn);
+var Mn = /*#__PURE__*/function () {
+  function Mn(e, t, n) {
+    (0, _classCallCheck2.default)(this, Mn);
     this.content = e, this.prevStage = t || null, this.udb = null, this._database = n;
   }
-  (0, _createClass2.default)(Kn, [{
+  (0, _createClass2.default)(Mn, [{
     key: "toJSON",
     value: function toJSON() {
       var e = this;
@@ -14812,6 +14845,11 @@ var Kn = /*#__PURE__*/function () {
           };
         })
       };
+    }
+  }, {
+    key: "toString",
+    value: function toString() {
+      return JSON.stringify(this.toJSON());
     }
   }, {
     key: "getAction",
@@ -14869,7 +14907,7 @@ var Kn = /*#__PURE__*/function () {
     value: function getNextStageFn(e) {
       var t = this;
       return function () {
-        return Mn({
+        return Kn({
           $method: e,
           $param: Fn(Array.from(arguments))
         }, t, t._database);
@@ -14926,7 +14964,7 @@ var Kn = /*#__PURE__*/function () {
       if (s.$db.push({
         $method: e,
         $param: Fn(t)
-      }), k) {
+      }), b) {
         var _e22 = s.$db.find(function (e) {
             return "collection" === e.$method;
           }),
@@ -14939,16 +14977,16 @@ var Kn = /*#__PURE__*/function () {
       });
     }
   }]);
-  return Kn;
+  return Mn;
 }();
-function Mn(e, t, n) {
-  return Un(new Kn(e, t, n), {
+function Kn(e, t, n) {
+  return Un(new Mn(e, t, n), {
     get: function get(e, t) {
       var s = "db";
-      return e && e.content && (s = e.content.$method), Dn(s, t) ? Mn({
+      return e && e.content && (s = e.content.$method), Dn(s, t) ? Kn({
         $method: t
       }, e, n) : function () {
-        return Mn({
+        return Kn({
           $method: t,
           $param: Fn(Array.from(arguments))
         }, e, n);
@@ -14978,6 +15016,11 @@ function jn(_ref36) {
           }])
         };
       }
+    }, {
+      key: "toString",
+      value: function toString() {
+        return JSON.stringify(this.toJSON());
+      }
     }]);
     return _class4;
   }();
@@ -14986,10 +15029,10 @@ function Bn(e) {
   var t = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   return Un(new e(t), {
     get: function get(e, t) {
-      return Dn("db", t) ? Mn({
+      return Dn("db", t) ? Kn({
         $method: t
       }, null, e) : function () {
-        return Mn({
+        return Kn({
           $method: t,
           $param: Fn(Array.from(arguments))
         }, null, e);
@@ -15026,8 +15069,8 @@ var $n = /*#__PURE__*/function (_ref37) {
       var i = this,
         o = this._isJQL ? "databaseForJQL" : "database";
       function a(e) {
-        return i._callback("error", [e]), q(K(o, "fail"), e).then(function () {
-          return q(K(o, "complete"), e);
+        return i._callback("error", [e]), q(M(o, "fail"), e).then(function () {
+          return q(M(o, "complete"), e);
         }).then(function () {
           return r(null, e), Q(B, {
             type: z,
@@ -15035,12 +15078,12 @@ var $n = /*#__PURE__*/function (_ref37) {
           }), Promise.reject(e);
         });
       }
-      var c = q(K(o, "invoke")),
+      var c = q(M(o, "invoke")),
         u = this._uniClient;
       return c.then(function () {
         return u.callFunction({
           name: "DCloud-clientDB",
-          type: h,
+          type: l,
           data: {
             action: e,
             command: t,
@@ -15060,7 +15103,7 @@ var $n = /*#__PURE__*/function (_ref37) {
             _t12 = _u$_e.level,
             _n11 = _u$_e.message,
             _s13 = _u$_e.detail,
-            _r6 = console["app" === A && "warn" === _t12 ? "error" : _t12] || console.log;
+            _r6 = console["app" === P && "warn" === _t12 ? "error" : _t12] || console.log;
           var _i4 = "[System Info]" + _n11;
           _s13 && (_i4 = "".concat(_i4, "\n\u8BE6\u7EC6\u4FE1\u606F\uFF1A").concat(_s13)), _r6(_i4);
         }
@@ -15084,7 +15127,7 @@ var $n = /*#__PURE__*/function (_ref37) {
           token: s,
           tokenExpired: c
         }));
-        var l = [{
+        var h = [{
           prop: "affectedDocs",
           tips: "affectedDocs不再推荐使用，请使用inserted/deleted/updated/data.length替代"
         }, {
@@ -15095,9 +15138,9 @@ var $n = /*#__PURE__*/function (_ref37) {
           tips: "message不再推荐使用，请使用errMsg替代"
         }];
         var _loop2 = function _loop2(_t13) {
-          var _l$_t = l[_t13],
-            n = _l$_t.prop,
-            s = _l$_t.tips;
+          var _h$_t = h[_t13],
+            n = _h$_t.prop,
+            s = _h$_t.tips;
           if (n in e.result) {
             var _t14 = e.result[n];
             Object.defineProperty(e.result, n, {
@@ -15107,12 +15150,12 @@ var $n = /*#__PURE__*/function (_ref37) {
             });
           }
         };
-        for (var _t13 = 0; _t13 < l.length; _t13++) {
+        for (var _t13 = 0; _t13 < h.length; _t13++) {
           _loop2(_t13);
         }
         return function (e) {
-          return q(K(o, "success"), e).then(function () {
-            return q(K(o, "complete"), e);
+          return q(M(o, "success"), e).then(function () {
+            return q(M(o, "complete"), e);
           }).then(function () {
             r(e, null);
             var t = i._parseResult(e);
@@ -15300,14 +15343,14 @@ var _ref40 = function () {
           notNeedLoginPage: n
         };
       }(n),
-      l = _ref23.needLoginPage,
-      h = _ref23.notNeedLoginPage;
+      h = _ref23.needLoginPage,
+      l = _ref23.notNeedLoginPage;
     return {
       loginPage: i,
       routerNeedLogin: o,
       resToLogin: a,
-      needLoginPage: [].concat((0, _toConsumableArray2.default)(c), (0, _toConsumableArray2.default)(l)),
-      notNeedLoginPage: [].concat((0, _toConsumableArray2.default)(u), (0, _toConsumableArray2.default)(h)),
+      needLoginPage: [].concat((0, _toConsumableArray2.default)(c), (0, _toConsumableArray2.default)(h)),
+      notNeedLoginPage: [].concat((0, _toConsumableArray2.default)(u), (0, _toConsumableArray2.default)(l)),
       loginPageInTabBar: Zn(i, r)
     };
   }(),
@@ -15348,7 +15391,7 @@ function us(_ref41) {
     n = Yn(ts);
   return Xn() !== n && t !== n;
 }
-function ls() {
+function hs() {
   var _ref42 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
     e = _ref42.api,
     t = _ref42.redirect;
@@ -15371,7 +15414,7 @@ function ls() {
     });
   });
 }
-function hs() {
+function ls() {
   var _ref43 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
     e = _ref43.url;
   var t = {
@@ -15412,12 +15455,12 @@ function hs() {
 function ds() {
   !function () {
     var e = Qn(),
-      _hs = hs({
+      _ls = ls({
         url: e
       }),
-      t = _hs.abortLoginPageJump,
-      n = _hs.autoToLoginPage;
-    t || n && ls({
+      t = _ls.abortLoginPageJump,
+      n = _ls.autoToLoginPage;
+    t || n && hs({
       api: "redirectTo",
       redirect: e
     });
@@ -15427,12 +15470,12 @@ function ds() {
     var n = e[_t16];
     uni.addInterceptor(n, {
       invoke: function invoke(e) {
-        var _hs2 = hs({
+        var _ls2 = ls({
             url: e.url
           }),
-          t = _hs2.abortLoginPageJump,
-          s = _hs2.autoToLoginPage;
-        return t ? e : s ? (ls({
+          t = _ls2.abortLoginPageJump,
+          s = _ls2.autoToLoginPage;
+        return t ? e : s ? (hs({
           api: n,
           redirect: as(e.url)
         }), !1) : e;
@@ -15474,7 +15517,7 @@ function ps() {
           redirect: n
         })) return t.length > 0 ? Q($, Object.assign({
           uniIdRedirectUrl: n
-        }, e)) : void (ts && ls({
+        }, e)) : void (ts && hs({
           api: "navigateTo",
           redirect: n
         }));
@@ -15697,7 +15740,7 @@ var ws = s(function (e, t) {
     };
   }),
   vs = n(ws);
-var bs = "manual";
+var Is = "manual";
 function Ss(e) {
   return {
     props: {
@@ -15817,7 +15860,7 @@ function Ss(e) {
           e.push(_this20[t]);
         }), e;
       }, function (e, t) {
-        if (_this20.loadtime === bs) return;
+        if (_this20.loadtime === Is) return;
         var n = !1;
         var s = [];
         for (var _r7 = 2; _r7 < e.length; _r7++) {
@@ -15866,9 +15909,9 @@ function Ss(e) {
         var u = t.groupField || this.groupField;
         u && (n = n.groupField(u));
         !0 === (void 0 !== t.distinct ? t.distinct : this.distinct) && (n = n.distinct());
-        var l = t.orderby || this.orderby;
-        l && (n = n.orderBy(l));
-        var h = void 0 !== t.pageCurrent ? t.pageCurrent : this.mixinDatacomPage.current,
+        var h = t.orderby || this.orderby;
+        h && (n = n.orderBy(h));
+        var l = void 0 !== t.pageCurrent ? t.pageCurrent : this.mixinDatacomPage.current,
           d = void 0 !== t.pageSize ? t.pageSize : this.mixinDatacomPage.size,
           p = void 0 !== t.getcount ? t.getcount : this.getcount,
           f = void 0 !== t.gettree ? t.gettree : this.gettree,
@@ -15880,12 +15923,12 @@ function Ss(e) {
             limitLevel: void 0 !== t.limitlevel ? t.limitlevel : this.limitlevel,
             startWith: void 0 !== t.startwith ? t.startwith : this.startwith
           };
-        return f && (m.getTree = y), g && (m.getTreePath = y), n = n.skip(d * (h - 1)).limit(d).get(m), n;
+        return f && (m.getTree = y), g && (m.getTreePath = y), n = n.skip(d * (l - 1)).limit(d).get(m), n;
       }
     }
   };
 }
-function ks(e) {
+function bs(e) {
   return function (t) {
     var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     n = function (e) {
@@ -15935,14 +15978,14 @@ function ks(e) {
                     }) : {};
                     _context50.prev = 2;
                     _context50.next = 5;
-                    return q(K(t, "invoke"), _objectSpread({}, r));
+                    return q(M(t, "invoke"), _objectSpread({}, r));
                   case 5:
                     _context50.next = 7;
                     return e.apply(void 0, s);
                   case 7:
                     i = _context50.sent;
                     _context50.next = 10;
-                    return q(K(t, "success"), _objectSpread(_objectSpread({}, r), {}, {
+                    return q(M(t, "success"), _objectSpread(_objectSpread({}, r), {}, {
                       result: i
                     }));
                   case 10:
@@ -15952,7 +15995,7 @@ function ks(e) {
                     _context50.t0 = _context50["catch"](2);
                     o = _context50.t0;
                     _context50.next = 18;
-                    return q(K(t, "fail"), _objectSpread(_objectSpread({}, r), {}, {
+                    return q(M(t, "fail"), _objectSpread(_objectSpread({}, r), {}, {
                       error: o
                     }));
                   case 18:
@@ -15960,7 +16003,7 @@ function ks(e) {
                   case 19:
                     _context50.prev = 19;
                     _context50.next = 22;
-                    return q(K(t, "complete"), o ? _objectSpread(_objectSpread({}, r), {}, {
+                    return q(M(t, "complete"), o ? _objectSpread(_objectSpread({}, r), {}, {
                       error: o
                     }) : _objectSpread(_objectSpread({}, r), {}, {
                       result: i
@@ -15977,7 +16020,7 @@ function ks(e) {
         }({
           fn: function () {
             var _s14 = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee52() {
-              var h,
+              var l,
                 _len3,
                 u,
                 _key3,
@@ -16006,7 +16049,7 @@ function ks(e) {
                       }
                       d = {
                         name: t,
-                        type: l,
+                        type: h,
                         data: {
                           method: c,
                           params: u
@@ -16023,17 +16066,17 @@ function ks(e) {
                       _context52.next = 8;
                       return e.callFunction(d);
                     case 8:
-                      h = _context52.sent;
+                      l = _context52.sent;
                       _context52.next = 14;
                       break;
                     case 11:
                       _context52.prev = 11;
                       _context52.t0 = _context52["catch"](5);
-                      p = !0, h = {
+                      p = !0, l = {
                         result: new ne(_context52.t0)
                       };
                     case 14:
-                      _ref50 = h.result || {}, f = _ref50.errSubject, g = _ref50.errCode, m = _ref50.errMsg, y = _ref50.newToken;
+                      _ref50 = l.result || {}, f = _ref50.errSubject, g = _ref50.errCode, m = _ref50.errMsg, y = _ref50.newToken;
                       if (!(a && uni.hideLoading(), y && y.token && y.tokenExpired && (ie(y), Q(W, _objectSpread({}, y))), g)) {
                         _context52.next = 39;
                         break;
@@ -16141,17 +16184,17 @@ function ks(e) {
                         subject: f,
                         code: g,
                         message: m,
-                        requestId: h.requestId
+                        requestId: l.requestId
                       });
-                      throw _n14.detail = h.result, Q(B, {
+                      throw _n14.detail = l.result, Q(B, {
                         type: H,
                         content: _n14
                       }), _n14;
                     case 39:
                       return _context52.abrupt("return", (Q(B, {
                         type: H,
-                        content: h.result
-                      }), h.result));
+                        content: l.result
+                      }), l.result));
                     case 40:
                     case "end":
                       return _context52.stop();
@@ -16179,47 +16222,47 @@ function ks(e) {
     });
   };
 }
-function Is(e) {
+function ks(e) {
   return U("_globalUniCloudSecureNetworkCache__{spaceId}".replace("{spaceId}", e.config.spaceId));
 }
-function Ts() {
-  return _Ts.apply(this, arguments);
+function Cs() {
+  return _Cs.apply(this, arguments);
 }
-function _Ts() {
-  _Ts = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee54() {
-    var _ref60,
+function _Cs() {
+  _Cs = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee55() {
+    var _ref65,
       e,
-      _ref60$callLoginByWei,
+      _ref65$callLoginByWei,
       t,
       n,
       s,
       r,
-      _args6 = arguments;
-    return _regenerator.default.wrap(function _callee54$(_context54) {
+      _args7 = arguments;
+    return _regenerator.default.wrap(function _callee55$(_context55) {
       while (1) {
-        switch (_context54.prev = _context54.next) {
+        switch (_context55.prev = _context55.next) {
           case 0:
-            _ref60 = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : {}, e = _ref60.openid, _ref60$callLoginByWei = _ref60.callLoginByWeixin, t = _ref60$callLoginByWei === void 0 ? !1 : _ref60$callLoginByWei;
-            n = Is(this);
-            if (!("mp-weixin" !== A)) {
-              _context54.next = 4;
+            _ref65 = _args7.length > 0 && _args7[0] !== undefined ? _args7[0] : {}, e = _ref65.openid, _ref65$callLoginByWei = _ref65.callLoginByWeixin, t = _ref65$callLoginByWei === void 0 ? !1 : _ref65$callLoginByWei;
+            n = ks(this);
+            if (!("mp-weixin" !== P)) {
+              _context55.next = 4;
               break;
             }
-            throw new Error("[SecureNetwork] API `initSecureNetworkByWeixin` is not supported on platform `".concat(A, "`"));
+            throw new Error("[SecureNetwork] API `initSecureNetworkByWeixin` is not supported on platform `".concat(P, "`"));
           case 4:
             if (!(e && t)) {
-              _context54.next = 6;
+              _context55.next = 6;
               break;
             }
             throw new Error("[SecureNetwork] openid and callLoginByWeixin cannot be passed at the same time");
           case 6:
             if (!e) {
-              _context54.next = 8;
+              _context55.next = 8;
               break;
             }
-            return _context54.abrupt("return", (n.mpWeixinOpenid = e, {}));
+            return _context55.abrupt("return", (n.mpWeixinOpenid = e, {}));
           case 8:
-            _context54.next = 10;
+            _context55.next = 10;
             return new Promise(function (e, t) {
               uni.login({
                 success: function success(t) {
@@ -16231,42 +16274,21 @@ function _Ts() {
               });
             });
           case 10:
-            s = _context54.sent;
+            s = _context55.sent;
             r = this.importObject("uni-id-co", {
               customUI: !0
             });
-            _context54.next = 14;
+            _context55.next = 14;
             return r.secureNetworkHandshakeByWeixin({
               code: s,
               callLoginByWeixin: t
             });
           case 14:
             n.mpWeixinCode = s;
-            return _context54.abrupt("return", {
+            return _context55.abrupt("return", {
               code: s
             });
           case 16:
-          case "end":
-            return _context54.stop();
-        }
-      }
-    }, _callee54, this);
-  }));
-  return _Ts.apply(this, arguments);
-}
-function Cs(_x37) {
-  return _Cs.apply(this, arguments);
-}
-function _Cs() {
-  _Cs = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee55(e) {
-    var t;
-    return _regenerator.default.wrap(function _callee55$(_context55) {
-      while (1) {
-        switch (_context55.prev = _context55.next) {
-          case 0:
-            t = Is(this);
-            return _context55.abrupt("return", (t.initPromise || (t.initPromise = Ts.call(this, e)), t.initPromise));
-          case 2:
           case "end":
             return _context55.stop();
         }
@@ -16275,31 +16297,262 @@ function _Cs() {
   }));
   return _Cs.apply(this, arguments);
 }
-function As(e) {
+function Ts(_x37) {
+  return _Ts.apply(this, arguments);
+}
+function _Ts() {
+  _Ts = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee56(e) {
+    var t;
+    return _regenerator.default.wrap(function _callee56$(_context56) {
+      while (1) {
+        switch (_context56.prev = _context56.next) {
+          case 0:
+            t = ks(this);
+            return _context56.abrupt("return", (t.initPromise || (t.initPromise = Cs.call(this, e)), t.initPromise));
+          case 2:
+          case "end":
+            return _context56.stop();
+        }
+      }
+    }, _callee56, this);
+  }));
+  return _Ts.apply(this, arguments);
+}
+function Ps(e) {
   return function () {
     var _ref54 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
       t = _ref54.openid,
       _ref54$callLoginByWei = _ref54.callLoginByWeixin,
       n = _ref54$callLoginByWei === void 0 ? !1 : _ref54$callLoginByWei;
-    return Cs.call(e, {
+    return Ts.call(e, {
       openid: t,
       callLoginByWeixin: n
     });
   };
 }
-function Ps(_x38, _x39) {
-  return _Ps.apply(this, arguments);
+function As(e) {
+  var t = {
+    getSystemInfo: uni.getSystemInfo,
+    getPushClientId: uni.getPushClientId
+  };
+  return function (n) {
+    return new Promise(function (s, r) {
+      t[e](_objectSpread(_objectSpread({}, n), {}, {
+        success: function success(e) {
+          s(e);
+        },
+        fail: function fail(e) {
+          r(e);
+        }
+      }));
+    });
+  };
 }
-function _Ps() {
-  _Ps = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee56(e, t) {
-    var n, _e31, s;
-    return _regenerator.default.wrap(function _callee56$(_context56) {
+var Es = /*#__PURE__*/function (_ref55) {
+  (0, _inherits2.default)(Es, _ref55);
+  var _super12 = _createSuper(Es);
+  function Es() {
+    var _this22;
+    (0, _classCallCheck2.default)(this, Es);
+    _this22 = _super12.call(this), _this22._uniPushMessageCallback = _this22._receivePushMessage.bind((0, _assertThisInitialized2.default)(_this22)), _this22._currentMessageId = -1, _this22._payloadQueue = [];
+    return _this22;
+  }
+  (0, _createClass2.default)(Es, [{
+    key: "init",
+    value: function init() {
+      var _this23 = this;
+      return Promise.all([As("getSystemInfo")(), As("getPushClientId")()]).then(function () {
+        var _ref56 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [],
+          _ref57 = (0, _slicedToArray2.default)(_ref56, 2),
+          _ref57$ = _ref57[0];
+        _ref57$ = _ref57$ === void 0 ? {} : _ref57$;
+        var e = _ref57$.appId,
+          _ref57$2 = _ref57[1];
+        _ref57$2 = _ref57$2 === void 0 ? {} : _ref57$2;
+        var t = _ref57$2.cid;
+        if (!e) throw new Error("Invalid appId, please check the manifest.json file");
+        if (!t) throw new Error("Invalid push client id");
+        _this23._appId = e, _this23._pushClientId = t, _this23._seqId = Date.now() + "-" + Math.floor(9e5 * Math.random() + 1e5), _this23.emit("open"), _this23._initMessageListener();
+      }, function (e) {
+        throw _this23.emit("error", e), _this23.close(), e;
+      });
+    }
+  }, {
+    key: "open",
+    value: function () {
+      var _open = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee53() {
+        return _regenerator.default.wrap(function _callee53$(_context53) {
+          while (1) {
+            switch (_context53.prev = _context53.next) {
+              case 0:
+                return _context53.abrupt("return", this.init());
+              case 1:
+              case "end":
+                return _context53.stop();
+            }
+          }
+        }, _callee53, this);
+      }));
+      function open() {
+        return _open.apply(this, arguments);
+      }
+      return open;
+    }()
+  }, {
+    key: "_isUniCloudSSE",
+    value: function _isUniCloudSSE(e) {
+      if ("receive" !== e.type) return !1;
+      var t = e && e.data && e.data.payload;
+      return !(!t || "UNI_CLOUD_SSE" !== t.channel || t.seqId !== this._seqId);
+    }
+  }, {
+    key: "_receivePushMessage",
+    value: function _receivePushMessage(e) {
+      if (!this._isUniCloudSSE(e)) return;
+      var t = e && e.data && e.data.payload,
+        n = t.action,
+        s = t.messageId,
+        r = t.message;
+      this._payloadQueue.push({
+        action: n,
+        messageId: s,
+        message: r
+      }), this._consumMessage();
+    }
+  }, {
+    key: "_consumMessage",
+    value: function _consumMessage() {
+      var _this24 = this;
+      for (;;) {
+        var _e28 = this._payloadQueue.find(function (e) {
+          return e.messageId === _this24._currentMessageId + 1;
+        });
+        if (!_e28) break;
+        this._currentMessageId++, this._parseMessagePayload(_e28);
+      }
+    }
+  }, {
+    key: "_parseMessagePayload",
+    value: function _parseMessagePayload(e) {
+      var t = e.action,
+        n = e.messageId,
+        s = e.message;
+      "end" === t ? this._end({
+        messageId: n,
+        message: s
+      }) : "message" === t && this._appendMessage({
+        messageId: n,
+        message: s
+      });
+    }
+  }, {
+    key: "_appendMessage",
+    value: function _appendMessage() {
+      var _ref58 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        e = _ref58.messageId,
+        t = _ref58.message;
+      this.emit("message", t);
+    }
+  }, {
+    key: "_end",
+    value: function _end() {
+      var _ref59 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        e = _ref59.messageId,
+        t = _ref59.message;
+      this.emit("end", t), this.close();
+    }
+  }, {
+    key: "_initMessageListener",
+    value: function _initMessageListener() {
+      uni.onPushMessage(this._uniPushMessageCallback);
+    }
+  }, {
+    key: "_destroy",
+    value: function _destroy() {
+      uni.offPushMessage(this._uniPushMessageCallback);
+    }
+  }, {
+    key: "toJSON",
+    value: function toJSON() {
+      return {
+        appId: this._appId,
+        pushClientId: this._pushClientId,
+        seqId: this._seqId
+      };
+    }
+  }, {
+    key: "close",
+    value: function close() {
+      this._destroy(), this.emit("close");
+    }
+  }]);
+  return Es;
+}( /*#__PURE__*/function () {
+  function _class6() {
+    (0, _classCallCheck2.default)(this, _class6);
+    this._callback = {};
+  }
+  (0, _createClass2.default)(_class6, [{
+    key: "addListener",
+    value: function addListener(e, t) {
+      this._callback[e] || (this._callback[e] = []), this._callback[e].push(t);
+    }
+  }, {
+    key: "on",
+    value: function on(e, t) {
+      return this.addListener(e, t);
+    }
+  }, {
+    key: "removeListener",
+    value: function removeListener(e, t) {
+      if (!t) throw new Error('The "listener" argument must be of type function. Received undefined');
+      var n = this._callback[e];
+      if (!n) return;
+      var s = function (e, t) {
+        for (var _n15 = e.length - 1; _n15 >= 0; _n15--) {
+          if (e[_n15] === t) return _n15;
+        }
+        return -1;
+      }(n, t);
+      n.splice(s, 1);
+    }
+  }, {
+    key: "off",
+    value: function off(e, t) {
+      return this.removeListener(e, t);
+    }
+  }, {
+    key: "removeAllListener",
+    value: function removeAllListener(e) {
+      delete this._callback[e];
+    }
+  }, {
+    key: "emit",
+    value: function emit(e) {
+      var n = this._callback[e];
+      for (var _len4 = arguments.length, t = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+        t[_key4 - 1] = arguments[_key4];
+      }
+      if (n) for (var _e29 = 0; _e29 < n.length; _e29++) {
+        n[_e29].apply(n, t);
+      }
+    }
+  }]);
+  return _class6;
+}());
+function Os(_x38, _x39) {
+  return _Os.apply(this, arguments);
+}
+function _Os() {
+  _Os = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee57(e, t) {
+    var n, _e33, s;
+    return _regenerator.default.wrap(function _callee57$(_context57) {
       while (1) {
-        switch (_context56.prev = _context56.next) {
+        switch (_context57.prev = _context57.next) {
           case 0:
             n = "http://".concat(e, ":").concat(t, "/system/ping");
-            _context56.prev = 1;
-            _context56.next = 4;
+            _context57.prev = 1;
+            _context57.next = 4;
             return s = {
               url: n,
               timeout: 500
@@ -16314,40 +16567,40 @@ function _Ps() {
               }));
             });
           case 4:
-            _e31 = _context56.sent;
-            return _context56.abrupt("return", !(!_e31.data || 0 !== _e31.data.code));
+            _e33 = _context57.sent;
+            return _context57.abrupt("return", !(!_e33.data || 0 !== _e33.data.code));
           case 8:
-            _context56.prev = 8;
-            _context56.t0 = _context56["catch"](1);
-            return _context56.abrupt("return", !1);
+            _context57.prev = 8;
+            _context57.t0 = _context57["catch"](1);
+            return _context57.abrupt("return", !1);
           case 11:
           case "end":
-            return _context56.stop();
+            return _context57.stop();
         }
       }
-    }, _callee56, null, [[1, 8]]);
+    }, _callee57, null, [[1, 8]]);
   }));
-  return _Ps.apply(this, arguments);
+  return _Os.apply(this, arguments);
 }
-function Es(_x40) {
-  return _Es.apply(this, arguments);
+function xs(_x40) {
+  return _xs.apply(this, arguments);
 }
-function _Es() {
-  _Es = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee58(e) {
-    var _ce2, _e32, _t20, t, _t$debugInfo, n, s, _yield2, r, i, o;
-    return _regenerator.default.wrap(function _callee58$(_context58) {
+function _xs() {
+  _xs = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee59(e) {
+    var _ce2, _e34, _t20, t, _t$debugInfo, n, s, _yield2, r, i, o;
+    return _regenerator.default.wrap(function _callee59$(_context59) {
       while (1) {
-        switch (_context58.prev = _context58.next) {
+        switch (_context59.prev = _context59.next) {
           case 0:
-            if (k) {
-              _context58.next = 2;
+            if (b) {
+              _context59.next = 2;
               break;
             }
-            return _context58.abrupt("return", Promise.resolve());
+            return _context59.abrupt("return", Promise.resolve());
           case 2:
-            if ("app" === A) {
-              _ce2 = ce(), _e32 = _ce2.osName, _t20 = _ce2.osVersion;
-              "ios" === _e32 && function (e) {
+            if ("app" === P) {
+              _ce2 = ce(), _e34 = _ce2.osName, _t20 = _ce2.osVersion;
+              "ios" === _e34 && function (e) {
                 if (!e || "string" != typeof e) return 0;
                 var t = e.match(/^(\d+)./);
                 return t && t[1] ? parseInt(t[1]) : 0;
@@ -16355,71 +16608,71 @@ function _Es() {
             }
             t = e.__dev__;
             if (t.debugInfo) {
-              _context58.next = 6;
+              _context59.next = 6;
               break;
             }
-            return _context58.abrupt("return");
+            return _context59.abrupt("return");
           case 6:
             _t$debugInfo = t.debugInfo;
             n = _t$debugInfo.address;
             s = _t$debugInfo.servePort;
-            _context58.next = 11;
+            _context59.next = 11;
             return function () {
-              var _ref61 = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee57(e, t) {
+              var _ref66 = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee58(e, t) {
                 var n, _s15, _r8;
-                return _regenerator.default.wrap(function _callee57$(_context57) {
+                return _regenerator.default.wrap(function _callee58$(_context58) {
                   while (1) {
-                    switch (_context57.prev = _context57.next) {
+                    switch (_context58.prev = _context58.next) {
                       case 0:
                         _s15 = 0;
                       case 1:
                         if (!(_s15 < e.length)) {
-                          _context57.next = 11;
+                          _context58.next = 11;
                           break;
                         }
                         _r8 = e[_s15];
-                        _context57.next = 5;
-                        return Ps(_r8, t);
+                        _context58.next = 5;
+                        return Os(_r8, t);
                       case 5:
-                        if (!_context57.sent) {
-                          _context57.next = 8;
+                        if (!_context58.sent) {
+                          _context58.next = 8;
                           break;
                         }
                         n = _r8;
-                        return _context57.abrupt("break", 11);
+                        return _context58.abrupt("break", 11);
                       case 8:
                         _s15++;
-                        _context57.next = 1;
+                        _context58.next = 1;
                         break;
                       case 11:
-                        return _context57.abrupt("return", {
+                        return _context58.abrupt("return", {
                           address: n,
                           port: t
                         });
                       case 12:
                       case "end":
-                        return _context57.stop();
+                        return _context58.stop();
                     }
                   }
-                }, _callee57);
+                }, _callee58);
               }));
               return function (_x41, _x42) {
-                return _ref61.apply(this, arguments);
+                return _ref66.apply(this, arguments);
               };
             }()(n, s);
           case 11:
-            _yield2 = _context58.sent;
+            _yield2 = _context59.sent;
             r = _yield2.address;
             if (!r) {
-              _context58.next = 15;
+              _context59.next = 15;
               break;
             }
-            return _context58.abrupt("return", (t.localAddress = r, void (t.localPort = s)));
+            return _context59.abrupt("return", (t.localAddress = r, void (t.localPort = s)));
           case 15:
-            i = console["app" === A ? "error" : "warn"];
+            i = console["app" === P ? "error" : "warn"];
             o = "";
-            if (!("remote" === t.debugInfo.initialLaunchType ? (t.debugInfo.forceRemote = !0, o = "当前客户端和HBuilderX不在同一局域网下（或其他网络原因无法连接HBuilderX），uniCloud本地调试服务不对当前客户端生效。\n- 如果不使用uniCloud本地调试服务，请直接忽略此信息。\n- 如需使用uniCloud本地调试服务，请将客户端与主机连接到同一局域网下并重新运行到客户端。") : o = "无法连接uniCloud本地调试服务，请检查当前客户端是否与主机在同一局域网下。\n- 如需使用uniCloud本地调试服务，请将客户端与主机连接到同一局域网下并重新运行到客户端。", o += "\n- 如果在HBuilderX开启的状态下切换过网络环境，请重启HBuilderX后再试\n- 检查系统防火墙是否拦截了HBuilderX自带的nodejs\n- 检查是否错误的使用拦截器修改uni.request方法的参数", "web" === A && (o += "\n- 部分浏览器开启节流模式之后访问本地地址受限，请检查是否启用了节流模式"), 0 === A.indexOf("mp-") && (o += "\n- 小程序中如何使用uniCloud，请参考：https://uniapp.dcloud.net.cn/uniCloud/publish.html#useinmp"), !t.debugInfo.forceRemote)) {
-              _context58.next = 19;
+            if (!("remote" === t.debugInfo.initialLaunchType ? (t.debugInfo.forceRemote = !0, o = "当前客户端和HBuilderX不在同一局域网下（或其他网络原因无法连接HBuilderX），uniCloud本地调试服务不对当前客户端生效。\n- 如果不使用uniCloud本地调试服务，请直接忽略此信息。\n- 如需使用uniCloud本地调试服务，请将客户端与主机连接到同一局域网下并重新运行到客户端。") : o = "无法连接uniCloud本地调试服务，请检查当前客户端是否与主机在同一局域网下。\n- 如需使用uniCloud本地调试服务，请将客户端与主机连接到同一局域网下并重新运行到客户端。", o += "\n- 如果在HBuilderX开启的状态下切换过网络环境，请重启HBuilderX后再试\n- 检查系统防火墙是否拦截了HBuilderX自带的nodejs\n- 检查是否错误的使用拦截器修改uni.request方法的参数", "web" === P && (o += "\n- 部分浏览器开启节流模式之后访问本地地址受限，请检查是否启用了节流模式"), 0 === P.indexOf("mp-") && (o += "\n- 小程序中如何使用uniCloud，请参考：https://uniapp.dcloud.net.cn/uniCloud/publish.html#useinmp"), !t.debugInfo.forceRemote)) {
+              _context59.next = 19;
               break;
             }
             throw new Error(o);
@@ -16427,15 +16680,15 @@ function _Es() {
             i(o);
           case 20:
           case "end":
-            return _context58.stop();
+            return _context59.stop();
         }
       }
-    }, _callee58);
+    }, _callee59);
   }));
-  return _Es.apply(this, arguments);
+  return _xs.apply(this, arguments);
 }
-function Os(e) {
-  e._initPromiseHub || (e._initPromiseHub = new b({
+function Rs(e) {
+  e._initPromiseHub || (e._initPromiseHub = new I({
     createPromise: function createPromise() {
       var t = Promise.resolve();
       var n;
@@ -16453,37 +16706,37 @@ function Os(e) {
     }
   }));
 }
-var xs = {
-  tcb: bt,
-  tencent: bt,
+var Us = {
+  tcb: It,
+  tencent: It,
   aliyun: ge,
-  private: kt
+  private: bt
 };
-var Rs = new ( /*#__PURE__*/function () {
-  function _class6() {
-    (0, _classCallCheck2.default)(this, _class6);
+var Ls = new ( /*#__PURE__*/function () {
+  function _class7() {
+    (0, _classCallCheck2.default)(this, _class7);
   }
-  (0, _createClass2.default)(_class6, [{
+  (0, _createClass2.default)(_class7, [{
     key: "init",
     value: function init(e) {
       var t = {};
-      var n = xs[e.provider];
+      var n = Us[e.provider];
       if (!n) throw new Error("未提供正确的provider参数");
-      t = n.init(e), k && function (e) {
-        if (!k) return;
+      t = n.init(e), b && function (e) {
+        if (!b) return;
         var t = {};
-        e.__dev__ = t, t.debugLog = k && ("web" === A && navigator.userAgent.indexOf("HBuilderX") > 0 || "app" === A);
-        var n = P;
+        e.__dev__ = t, t.debugLog = b && ("web" === P && navigator.userAgent.indexOf("HBuilderX") > 0 || "app" === P);
+        var n = A;
         n && !n.code && (t.debugInfo = n);
-        var s = new b({
+        var s = new I({
           createPromise: function createPromise() {
-            return Es(e);
+            return xs(e);
           }
         });
         t.initLocalNetwork = function () {
           return s.exec();
         };
-      }(t), Os(t), xn(t), function (e) {
+      }(t), Rs(t), xn(t), function (e) {
         var t = e.uploadFile;
         e.uploadFile = function (e) {
           return t.call(this, e);
@@ -16510,7 +16763,7 @@ var Rs = new ( /*#__PURE__*/function () {
           get mixinDatacom() {
             return Ss(e);
           }
-        }), e.importObject = ks(e), e.initSecureNetworkByWeixin = As(e);
+        }), e.SSEChannel = Es, e.initSecureNetworkByWeixin = Ps(e), e.importObject = bs(e);
       }(t);
       return ["callFunction", "uploadFile", "deleteFile", "getTempFileURL", "downloadFile", "chooseAndUploadFile"].forEach(function (e) {
         if (!t[e]) return;
@@ -16519,11 +16772,11 @@ var Rs = new ( /*#__PURE__*/function () {
           return n.apply(t, Array.from(arguments));
         }, t[e] = function (e, t) {
           return function (n) {
-            var _this22 = this;
+            var _this25 = this;
             var s = !1;
             if ("callFunction" === t) {
-              var _e28 = n && n.type || u;
-              s = _e28 !== u;
+              var _e30 = n && n.type || u;
+              s = _e30 !== u;
             }
             var r = "callFunction" === t && !s,
               i = this._initPromiseHub.exec();
@@ -16532,13 +16785,13 @@ var Rs = new ( /*#__PURE__*/function () {
               o = _te2.success,
               a = _te2.fail,
               c = _te2.complete,
-              l = i.then(function () {
-                return s ? Promise.resolve() : q(K(t, "invoke"), n);
+              h = i.then(function () {
+                return s ? Promise.resolve() : q(M(t, "invoke"), n);
               }).then(function () {
-                return e.call(_this22, n);
+                return e.call(_this25, n);
               }).then(function (e) {
-                return s ? Promise.resolve(e) : q(K(t, "success"), e).then(function () {
-                  return q(K(t, "complete"), e);
+                return s ? Promise.resolve(e) : q(M(t, "success"), e).then(function () {
+                  return q(M(t, "complete"), e);
                 }).then(function () {
                   return r && Q(B, {
                     type: J,
@@ -16546,8 +16799,8 @@ var Rs = new ( /*#__PURE__*/function () {
                   }), Promise.resolve(e);
                 });
               }, function (e) {
-                return s ? Promise.reject(e) : q(K(t, "fail"), e).then(function () {
-                  return q(K(t, "complete"), e);
+                return s ? Promise.reject(e) : q(M(t, "fail"), e).then(function () {
+                  return q(M(t, "complete"), e);
                 }).then(function () {
                   return Q(B, {
                     type: J,
@@ -16555,8 +16808,8 @@ var Rs = new ( /*#__PURE__*/function () {
                   }), Promise.reject(e);
                 });
               });
-            if (!(o || a || c)) return l;
-            l.then(function (e) {
+            if (!(o || a || c)) return h;
+            h.then(function (e) {
               o && o(e), c && c(e), r && Q(B, {
                 type: J,
                 content: e
@@ -16572,31 +16825,31 @@ var Rs = new ( /*#__PURE__*/function () {
       }), t.init = this.init, t;
     }
   }]);
-  return _class6;
+  return _class7;
 }())();
 (function () {
   var e = E;
   var t = {};
-  if (e && 1 === e.length) t = e[0], Rs = Rs.init(t), Rs._isDefault = !0;else {
+  if (e && 1 === e.length) t = e[0], Ls = Ls.init(t), Ls._isDefault = !0;else {
     var _t19 = ["auth", "callFunction", "uploadFile", "deleteFile", "getTempFileURL", "downloadFile", "database", "getCurrentUSerInfo", "importObject"];
-    var _n15;
-    _n15 = e && e.length > 0 ? "应用有多个服务空间，请通过uniCloud.init方法指定要使用的服务空间" : O ? "应用未关联服务空间，请在uniCloud目录右键关联服务空间" : "uni-app cli项目内使用uniCloud需要使用HBuilderX的运行菜单运行项目，且需要在uniCloud目录关联服务空间", _t19.forEach(function (e) {
-      Rs[e] = function () {
-        return console.error(_n15), Promise.reject(new ne({
+    var _n16;
+    _n16 = e && e.length > 0 ? "应用有多个服务空间，请通过uniCloud.init方法指定要使用的服务空间" : O ? "应用未关联服务空间，请在uniCloud目录右键关联服务空间" : "uni-app cli项目内使用uniCloud需要使用HBuilderX的运行菜单运行项目，且需要在uniCloud目录关联服务空间", _t19.forEach(function (e) {
+      Ls[e] = function () {
+        return console.error(_n16), Promise.reject(new ne({
           code: "SYS_ERR",
-          message: _n15
+          message: _n16
         }));
       };
     });
   }
-  Object.assign(Rs, {
+  Object.assign(Ls, {
     get mixinDatacom() {
-      return Ss(Rs);
+      return Ss(Ls);
     }
-  }), fs(Rs), Rs.addInterceptor = D, Rs.removeInterceptor = F, Rs.interceptObject = M, k && "web" === A && (window.uniCloud = Rs);
+  }), fs(Ls), Ls.addInterceptor = D, Ls.removeInterceptor = F, Ls.interceptObject = K, b && "web" === P && (window.uniCloud = Ls);
 })();
-var Us = Rs;
-exports.default = Us;
+var Ns = Ls;
+exports.default = Ns;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/buildin/global.js */ 3), __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"], __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/wx.js */ 1)["default"]))
 
 /***/ }),
@@ -16935,6 +17188,22 @@ module.exports = _regeneratorRuntime, module.exports.__esModule = true, module.e
 
 /***/ }),
 /* 30 */
+/*!**********************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/assertThisInitialized.js ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+  return self;
+}
+module.exports = _assertThisInitialized, module.exports.__esModule = true, module.exports["default"] = module.exports;
+
+/***/ }),
+/* 31 */
 /*!*****************************************************************!*\
   !*** ./node_modules/@babel/runtime/helpers/asyncToGenerator.js ***!
   \*****************************************************************/
@@ -16974,7 +17243,7 @@ function _asyncToGenerator(fn) {
 module.exports = _asyncToGenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /*!*********************************************************!*\
   !*** ./node_modules/@babel/runtime/helpers/inherits.js ***!
   \*********************************************************/
@@ -17001,7 +17270,7 @@ function _inherits(subClass, superClass) {
 module.exports = _inherits, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
-/* 32 */
+/* 33 */
 /*!**************************************************************************!*\
   !*** ./node_modules/@babel/runtime/helpers/possibleConstructorReturn.js ***!
   \**************************************************************************/
@@ -17009,7 +17278,7 @@ module.exports = _inherits, module.exports.__esModule = true, module.exports["de
 /***/ (function(module, exports, __webpack_require__) {
 
 var _typeof = __webpack_require__(/*! ./typeof.js */ 13)["default"];
-var assertThisInitialized = __webpack_require__(/*! ./assertThisInitialized.js */ 33);
+var assertThisInitialized = __webpack_require__(/*! ./assertThisInitialized.js */ 30);
 function _possibleConstructorReturn(self, call) {
   if (call && (_typeof(call) === "object" || typeof call === "function")) {
     return call;
@@ -17019,22 +17288,6 @@ function _possibleConstructorReturn(self, call) {
   return assertThisInitialized(self);
 }
 module.exports = _possibleConstructorReturn, module.exports.__esModule = true, module.exports["default"] = module.exports;
-
-/***/ }),
-/* 33 */
-/*!**********************************************************************!*\
-  !*** ./node_modules/@babel/runtime/helpers/assertThisInitialized.js ***!
-  \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-  return self;
-}
-module.exports = _assertThisInitialized, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
 /* 34 */
@@ -17324,7 +17577,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _default = {
-  "appid": "__UNI__9B90031"
+  "appid": "__UNI__57FA905"
 };
 exports.default = _default;
 
@@ -18770,7 +19023,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _user = _interopRequireDefault(__webpack_require__(/*! ../../api/modules/user.js */ 48));
 var user = uniCloud.importObject('user');
 var state = {
@@ -18963,7 +19216,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
@@ -22535,7 +22788,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _classCallCheck2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ 23));
 var _createClass2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/createClass */ 24));
 /**
@@ -45911,7 +46164,7 @@ module.exports = function(module) {
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(uniCloud) {var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ 28);
-var _asyncToGenerator = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30);
+var _asyncToGenerator = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31);
 // 云对象教程: https://uniapp.dcloud.net.cn/uniCloud/cloud-obj
 // jsdoc语法提示教程：https://ask.dcloud.net.cn/docs/#//ask.dcloud.net.cn/article/129
 var db = uniCloud.database();
@@ -48815,9 +49068,9 @@ exports.default = _default;
 /* 585 */,
 /* 586 */,
 /* 587 */
-/*!*********************************************************************************************************!*\
-  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-sticky/props.js ***!
-  \*********************************************************************************************************/
+/*!*****************************************************************************************************************!*\
+  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-checkbox-group/props.js ***!
+  \*****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48830,35 +49083,80 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var _default = {
   props: {
-    // 吸顶容器到顶部某个距离的时候，进行吸顶，在H5平台，NavigationBar为44px
-    offsetTop: {
-      type: [String, Number],
-      default: uni.$u.props.sticky.offsetTop
+    // 标识符
+    name: {
+      type: String,
+      default: uni.$u.props.checkboxGroup.name
     },
-    // 自定义导航栏的高度
-    customNavHeight: {
-      type: [String, Number],
-      default: uni.$u.props.sticky.customNavHeight
+    // 绑定的值
+    value: {
+      type: Array,
+      default: uni.$u.props.checkboxGroup.value
     },
-    // 是否开启吸顶功能
+    // 形状，circle-圆形，square-方形
+    shape: {
+      type: String,
+      default: uni.$u.props.checkboxGroup.shape
+    },
+    // 是否禁用全部checkbox
     disabled: {
       type: Boolean,
-      default: uni.$u.props.sticky.disabled
+      default: uni.$u.props.checkboxGroup.disabled
     },
-    // 吸顶区域的背景颜色
-    bgColor: {
+    // 选中状态下的颜色，如设置此值，将会覆盖parent的activeColor值
+    activeColor: {
       type: String,
-      default: uni.$u.props.sticky.bgColor
+      default: uni.$u.props.checkboxGroup.activeColor
     },
-    // z-index值
-    zIndex: {
-      type: [String, Number],
-      default: uni.$u.props.sticky.zIndex
+    // 未选中的颜色
+    inactiveColor: {
+      type: String,
+      default: uni.$u.props.checkboxGroup.inactiveColor
     },
-    // 列表中的索引值
-    index: {
+    // 整个组件的尺寸，默认px
+    size: {
       type: [String, Number],
-      default: uni.$u.props.sticky.index
+      default: uni.$u.props.checkboxGroup.size
+    },
+    // 布局方式，row-横向，column-纵向
+    placement: {
+      type: String,
+      default: uni.$u.props.checkboxGroup.placement
+    },
+    // label的字体大小，px单位
+    labelSize: {
+      type: [String, Number],
+      default: uni.$u.props.checkboxGroup.labelSize
+    },
+    // label的字体颜色
+    labelColor: {
+      type: [String],
+      default: uni.$u.props.checkboxGroup.labelColor
+    },
+    // 是否禁止点击文本操作
+    labelDisabled: {
+      type: Boolean,
+      default: uni.$u.props.checkboxGroup.labelDisabled
+    },
+    // 图标颜色
+    iconColor: {
+      type: String,
+      default: uni.$u.props.checkboxGroup.iconColor
+    },
+    // 图标的大小，单位px
+    iconSize: {
+      type: [String, Number],
+      default: uni.$u.props.checkboxGroup.iconSize
+    },
+    // 勾选图标的对齐方式，left-左边，right-右边
+    iconPlacement: {
+      type: String,
+      default: uni.$u.props.checkboxGroup.iconPlacement
+    },
+    // 竖向配列时，是否显示下划线
+    borderBottom: {
+      type: Boolean,
+      default: uni.$u.props.checkboxGroup.borderBottom
     }
   }
 };
@@ -48982,12 +49280,310 @@ exports.default = _default;
 /* 600 */,
 /* 601 */,
 /* 602 */,
-/* 603 */,
+/* 603 */
+/*!*******************************************************************************************************!*\
+  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-text/value.js ***!
+  \*******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  computed: {
+    // 经处理后需要显示的值
+    value: function value() {
+      var text = this.text,
+        mode = this.mode,
+        format = this.format,
+        href = this.href;
+      // 价格类型
+      if (mode === 'price') {
+        // 如果text不为金额进行提示
+        if (!/^\d+(\.\d+)?$/.test(text)) {
+          uni.$u.error('金额模式下，text参数需要为金额格式');
+        }
+        // 进行格式化，判断用户传入的format参数为正则，或者函数，如果没有传入format，则使用默认的金额格式化处理
+        if (uni.$u.test.func(format)) {
+          // 如果用户传入的是函数，使用函数格式化
+          return format(text);
+        }
+        // 如果format非正则，非函数，则使用默认的金额格式化方法进行操作
+        return uni.$u.priceFormat(text, 2);
+      }
+      if (mode === 'date') {
+        // 判断是否合法的日期或者时间戳
+        !uni.$u.test.date(text) && uni.$u.error('日期模式下，text参数需要为日期或时间戳格式');
+        // 进行格式化，判断用户传入的format参数为正则，或者函数，如果没有传入format，则使用默认的格式化处理
+        if (uni.$u.test.func(format)) {
+          // 如果用户传入的是函数，使用函数格式化
+          return format(text);
+        }
+        if (format) {
+          // 如果format非正则，非函数，则使用默认的时间格式化方法进行操作
+          return uni.$u.timeFormat(text, format);
+        }
+        // 如果没有设置format，则设置为默认的时间格式化形式
+        return uni.$u.timeFormat(text, 'yyyy-mm-dd');
+      }
+      if (mode === 'phone') {
+        // 判断是否合法的手机号
+        // !uni.$u.test.mobile(text) && uni.$u.error('手机号模式下，text参数需要为手机号码格式')
+        if (uni.$u.test.func(format)) {
+          // 如果用户传入的是函数，使用函数格式化
+          return format(text);
+        }
+        if (format === 'encrypt') {
+          // 如果format为encrypt，则将手机号进行星号加密处理
+          return "".concat(text.substr(0, 3), "****").concat(text.substr(7));
+        }
+        return text;
+      }
+      if (mode === 'name') {
+        // 判断是否合法的字符粗
+        !(typeof text === 'string') && uni.$u.error('姓名模式下，text参数需要为字符串格式');
+        if (uni.$u.test.func(format)) {
+          // 如果用户传入的是函数，使用函数格式化
+          return format(text);
+        }
+        if (format === 'encrypt') {
+          // 如果format为encrypt，则将姓名进行星号加密处理
+          return this.formatName(text);
+        }
+        return text;
+      }
+      if (mode === 'link') {
+        // 判断是否合法的字符粗
+        !uni.$u.test.url(href) && uni.$u.error('超链接模式下，href参数需要为URL格式');
+        return text;
+      }
+      return text;
+    }
+  },
+  methods: {
+    // 默认的姓名脱敏规则
+    formatName: function formatName(name) {
+      var value = '';
+      if (name.length === 2) {
+        value = name.substr(0, 1) + '*';
+      } else if (name.length > 2) {
+        var char = '';
+        for (var i = 0, len = name.length - 2; i < len; i++) {
+          char += '*';
+        }
+        value = name.substr(0, 1) + char + name.substr(-1, 1);
+      } else {
+        value = name;
+      }
+      return value;
+    }
+  }
+};
+exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
+
+/***/ }),
 /* 604 */,
 /* 605 */,
 /* 606 */,
 /* 607 */,
-/* 608 */
+/* 608 */,
+/* 609 */,
+/* 610 */,
+/* 611 */
+/*!*******************************************************************************************************!*\
+  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-rate/props.js ***!
+  \*******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  props: {
+    // 用于v-model双向绑定选中的星星数量
+    value: {
+      type: [String, Number],
+      default: uni.$u.props.rate.value
+    },
+    // 要显示的星星数量
+    count: {
+      type: [String, Number],
+      default: uni.$u.props.rate.count
+    },
+    // 是否不可选中
+    disabled: {
+      type: Boolean,
+      default: uni.$u.props.rate.disabled
+    },
+    // 是否只读
+    readonly: {
+      type: Boolean,
+      default: uni.$u.props.rate.readonly
+    },
+    // 星星的大小，单位px
+    size: {
+      type: [String, Number],
+      default: uni.$u.props.rate.size
+    },
+    // 未选中时的颜色
+    inactiveColor: {
+      type: String,
+      default: uni.$u.props.rate.inactiveColor
+    },
+    // 选中的颜色
+    activeColor: {
+      type: String,
+      default: uni.$u.props.rate.activeColor
+    },
+    // 星星之间的间距，单位px
+    gutter: {
+      type: [String, Number],
+      default: uni.$u.props.rate.gutter
+    },
+    // 最少能选择的星星个数
+    minCount: {
+      type: [String, Number],
+      default: uni.$u.props.rate.minCount
+    },
+    // 是否允许半星
+    allowHalf: {
+      type: Boolean,
+      default: uni.$u.props.rate.allowHalf
+    },
+    // 选中时的图标(星星)
+    activeIcon: {
+      type: String,
+      default: uni.$u.props.rate.activeIcon
+    },
+    // 未选中时的图标(星星)
+    inactiveIcon: {
+      type: String,
+      default: uni.$u.props.rate.inactiveIcon
+    },
+    // 是否可以通过滑动手势选择评分
+    touchable: {
+      type: Boolean,
+      default: uni.$u.props.rate.touchable
+    }
+  }
+};
+exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
+
+/***/ }),
+/* 612 */,
+/* 613 */,
+/* 614 */,
+/* 615 */,
+/* 616 */,
+/* 617 */,
+/* 618 */,
+/* 619 */
+/*!***********************************************************************************************************!*\
+  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-checkbox/props.js ***!
+  \***********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  props: {
+    // checkbox的名称
+    name: {
+      type: [String, Number, Boolean],
+      default: uni.$u.props.checkbox.name
+    },
+    // 形状，square为方形，circle为圆型
+    shape: {
+      type: String,
+      default: uni.$u.props.checkbox.shape
+    },
+    // 整体的大小
+    size: {
+      type: [String, Number],
+      default: uni.$u.props.checkbox.size
+    },
+    // 是否默认选中
+    checked: {
+      type: Boolean,
+      default: uni.$u.props.checkbox.checked
+    },
+    // 是否禁用
+    disabled: {
+      type: [String, Boolean],
+      default: uni.$u.props.checkbox.disabled
+    },
+    // 选中状态下的颜色，如设置此值，将会覆盖parent的activeColor值
+    activeColor: {
+      type: String,
+      default: uni.$u.props.checkbox.activeColor
+    },
+    // 未选中的颜色
+    inactiveColor: {
+      type: String,
+      default: uni.$u.props.checkbox.inactiveColor
+    },
+    // 图标的大小，单位px
+    iconSize: {
+      type: [String, Number],
+      default: uni.$u.props.checkbox.iconSize
+    },
+    // 图标颜色
+    iconColor: {
+      type: String,
+      default: uni.$u.props.checkbox.iconColor
+    },
+    // label提示文字，因为nvue下，直接slot进来的文字，由于特殊的结构，无法修改样式
+    label: {
+      type: [String, Number],
+      default: uni.$u.props.checkbox.label
+    },
+    // label的字体大小，px单位
+    labelSize: {
+      type: [String, Number],
+      default: uni.$u.props.checkbox.labelSize
+    },
+    // label的颜色
+    labelColor: {
+      type: String,
+      default: uni.$u.props.checkbox.labelColor
+    },
+    // 是否禁止点击提示语选中复选框
+    labelDisabled: {
+      type: [String, Boolean],
+      default: uni.$u.props.checkbox.labelDisabled
+    }
+  }
+};
+exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
+
+/***/ }),
+/* 620 */,
+/* 621 */,
+/* 622 */,
+/* 623 */,
+/* 624 */,
+/* 625 */,
+/* 626 */,
+/* 627 */
 /*!***********************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-count-to/props.js ***!
   \***********************************************************************************************************/
@@ -49064,14 +49660,14 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 609 */,
-/* 610 */,
-/* 611 */,
-/* 612 */,
-/* 613 */,
-/* 614 */,
-/* 615 */,
-/* 616 */
+/* 628 */,
+/* 629 */,
+/* 630 */,
+/* 631 */,
+/* 632 */,
+/* 633 */,
+/* 634 */,
+/* 635 */
 /*!********************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-popup/props.js ***!
   \********************************************************************************************************/
@@ -49168,14 +49764,14 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 617 */,
-/* 618 */,
-/* 619 */,
-/* 620 */,
-/* 621 */,
-/* 622 */,
-/* 623 */,
-/* 624 */
+/* 636 */,
+/* 637 */,
+/* 638 */,
+/* 639 */,
+/* 640 */,
+/* 641 */,
+/* 642 */,
+/* 643 */
 /*!***************************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-loading-icon/props.js ***!
   \***************************************************************************************************************/
@@ -49252,14 +49848,14 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 625 */,
-/* 626 */,
-/* 627 */,
-/* 628 */,
-/* 629 */,
-/* 630 */,
-/* 631 */,
-/* 632 */
+/* 644 */,
+/* 645 */,
+/* 646 */,
+/* 647 */,
+/* 648 */,
+/* 649 */,
+/* 650 */,
+/* 651 */
 /*!********************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-badge/props.js ***!
   \********************************************************************************************************/
@@ -49349,14 +49945,14 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 633 */,
-/* 634 */,
-/* 635 */,
-/* 636 */,
-/* 637 */,
-/* 638 */,
-/* 639 */,
-/* 640 */
+/* 652 */,
+/* 653 */,
+/* 654 */,
+/* 655 */,
+/* 656 */,
+/* 657 */,
+/* 658 */,
+/* 659 */
 /*!***********************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uni-icons/components/uni-icons/icons.js ***!
   \***********************************************************************************************************/
@@ -50377,14 +50973,19 @@ var _default = {
 exports.default = _default;
 
 /***/ }),
-/* 641 */,
-/* 642 */,
-/* 643 */,
-/* 644 */,
-/* 645 */,
-/* 646 */,
-/* 647 */,
-/* 648 */
+/* 660 */,
+/* 661 */,
+/* 662 */,
+/* 663 */,
+/* 664 */,
+/* 665 */,
+/* 666 */,
+/* 667 */,
+/* 668 */,
+/* 669 */,
+/* 670 */,
+/* 671 */,
+/* 672 */
 /*!**********************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-overlay/props.js ***!
   \**********************************************************************************************************/
@@ -50426,14 +51027,14 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 649 */,
-/* 650 */,
-/* 651 */,
-/* 652 */,
-/* 653 */,
-/* 654 */,
-/* 655 */,
-/* 656 */
+/* 673 */,
+/* 674 */,
+/* 675 */,
+/* 676 */,
+/* 677 */,
+/* 678 */,
+/* 679 */,
+/* 680 */
 /*!******************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-gap/props.js ***!
   \******************************************************************************************************/
@@ -50475,14 +51076,14 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 657 */,
-/* 658 */,
-/* 659 */,
-/* 660 */,
-/* 661 */,
-/* 662 */,
-/* 663 */,
-/* 664 */
+/* 681 */,
+/* 682 */,
+/* 683 */,
+/* 684 */,
+/* 685 */,
+/* 686 */,
+/* 687 */,
+/* 688 */
 /*!*************************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-transition/props.js ***!
   \*************************************************************************************************************/
@@ -50524,7 +51125,7 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 665 */
+/* 689 */
 /*!******************************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-transition/transition.js ***!
   \******************************************************************************************************************/
@@ -50540,8 +51141,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
-var _nvueAniMap = _interopRequireDefault(__webpack_require__(/*! ./nvue.ani-map.js */ 666));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
+var _nvueAniMap = _interopRequireDefault(__webpack_require__(/*! ./nvue.ani-map.js */ 690));
 // 定义一个一定时间后自动成功的promise，让调用nextTick方法处，进入下一个then方法
 var nextTick = function nextTick() {
   return new Promise(function (resolve) {
@@ -50633,7 +51234,7 @@ var _default = {
 exports.default = _default;
 
 /***/ }),
-/* 666 */
+/* 690 */
 /*!********************************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-transition/nvue.ani-map.js ***!
   \********************************************************************************************************************/
@@ -50826,14 +51427,14 @@ var _default = {
 exports.default = _default;
 
 /***/ }),
-/* 667 */,
-/* 668 */,
-/* 669 */,
-/* 670 */,
-/* 671 */,
-/* 672 */,
-/* 673 */,
-/* 674 */
+/* 691 */,
+/* 692 */,
+/* 693 */,
+/* 694 */,
+/* 695 */,
+/* 696 */,
+/* 697 */,
+/* 698 */
 /*!*************************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-status-bar/props.js ***!
   \*************************************************************************************************************/
@@ -50859,229 +51460,12 @@ exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
-/* 675 */,
-/* 676 */,
-/* 677 */,
-/* 678 */,
-/* 679 */,
-/* 680 */,
-/* 681 */,
-/* 682 */
-/*!*******************************************************************************************************!*\
-  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-text/value.js ***!
-  \*******************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-var _default = {
-  computed: {
-    // 经处理后需要显示的值
-    value: function value() {
-      var text = this.text,
-        mode = this.mode,
-        format = this.format,
-        href = this.href;
-      // 价格类型
-      if (mode === 'price') {
-        // 如果text不为金额进行提示
-        if (!/^\d+(\.\d+)?$/.test(text)) {
-          uni.$u.error('金额模式下，text参数需要为金额格式');
-        }
-        // 进行格式化，判断用户传入的format参数为正则，或者函数，如果没有传入format，则使用默认的金额格式化处理
-        if (uni.$u.test.func(format)) {
-          // 如果用户传入的是函数，使用函数格式化
-          return format(text);
-        }
-        // 如果format非正则，非函数，则使用默认的金额格式化方法进行操作
-        return uni.$u.priceFormat(text, 2);
-      }
-      if (mode === 'date') {
-        // 判断是否合法的日期或者时间戳
-        !uni.$u.test.date(text) && uni.$u.error('日期模式下，text参数需要为日期或时间戳格式');
-        // 进行格式化，判断用户传入的format参数为正则，或者函数，如果没有传入format，则使用默认的格式化处理
-        if (uni.$u.test.func(format)) {
-          // 如果用户传入的是函数，使用函数格式化
-          return format(text);
-        }
-        if (format) {
-          // 如果format非正则，非函数，则使用默认的时间格式化方法进行操作
-          return uni.$u.timeFormat(text, format);
-        }
-        // 如果没有设置format，则设置为默认的时间格式化形式
-        return uni.$u.timeFormat(text, 'yyyy-mm-dd');
-      }
-      if (mode === 'phone') {
-        // 判断是否合法的手机号
-        // !uni.$u.test.mobile(text) && uni.$u.error('手机号模式下，text参数需要为手机号码格式')
-        if (uni.$u.test.func(format)) {
-          // 如果用户传入的是函数，使用函数格式化
-          return format(text);
-        }
-        if (format === 'encrypt') {
-          // 如果format为encrypt，则将手机号进行星号加密处理
-          return "".concat(text.substr(0, 3), "****").concat(text.substr(7));
-        }
-        return text;
-      }
-      if (mode === 'name') {
-        // 判断是否合法的字符粗
-        !(typeof text === 'string') && uni.$u.error('姓名模式下，text参数需要为字符串格式');
-        if (uni.$u.test.func(format)) {
-          // 如果用户传入的是函数，使用函数格式化
-          return format(text);
-        }
-        if (format === 'encrypt') {
-          // 如果format为encrypt，则将姓名进行星号加密处理
-          return this.formatName(text);
-        }
-        return text;
-      }
-      if (mode === 'link') {
-        // 判断是否合法的字符粗
-        !uni.$u.test.url(href) && uni.$u.error('超链接模式下，href参数需要为URL格式');
-        return text;
-      }
-      return text;
-    }
-  },
-  methods: {
-    // 默认的姓名脱敏规则
-    formatName: function formatName(name) {
-      var value = '';
-      if (name.length === 2) {
-        value = name.substr(0, 1) + '*';
-      } else if (name.length > 2) {
-        var char = '';
-        for (var i = 0, len = name.length - 2; i < len; i++) {
-          char += '*';
-        }
-        value = name.substr(0, 1) + char + name.substr(-1, 1);
-      } else {
-        value = name;
-      }
-      return value;
-    }
-  }
-};
-exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
-
-/***/ }),
-/* 683 */,
-/* 684 */,
-/* 685 */,
-/* 686 */,
-/* 687 */,
-/* 688 */,
-/* 689 */,
-/* 690 */,
-/* 691 */,
-/* 692 */,
-/* 693 */,
-/* 694 */,
-/* 695 */,
-/* 696 */,
-/* 697 */,
-/* 698 */,
 /* 699 */,
 /* 700 */,
 /* 701 */,
 /* 702 */,
 /* 703 */,
-/* 704 */
-/*!*******************************************************************************************************!*\
-  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-rate/props.js ***!
-  \*******************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-var _default = {
-  props: {
-    // 用于v-model双向绑定选中的星星数量
-    value: {
-      type: [String, Number],
-      default: uni.$u.props.rate.value
-    },
-    // 要显示的星星数量
-    count: {
-      type: [String, Number],
-      default: uni.$u.props.rate.count
-    },
-    // 是否不可选中
-    disabled: {
-      type: Boolean,
-      default: uni.$u.props.rate.disabled
-    },
-    // 是否只读
-    readonly: {
-      type: Boolean,
-      default: uni.$u.props.rate.readonly
-    },
-    // 星星的大小，单位px
-    size: {
-      type: [String, Number],
-      default: uni.$u.props.rate.size
-    },
-    // 未选中时的颜色
-    inactiveColor: {
-      type: String,
-      default: uni.$u.props.rate.inactiveColor
-    },
-    // 选中的颜色
-    activeColor: {
-      type: String,
-      default: uni.$u.props.rate.activeColor
-    },
-    // 星星之间的间距，单位px
-    gutter: {
-      type: [String, Number],
-      default: uni.$u.props.rate.gutter
-    },
-    // 最少能选择的星星个数
-    minCount: {
-      type: [String, Number],
-      default: uni.$u.props.rate.minCount
-    },
-    // 是否允许半星
-    allowHalf: {
-      type: Boolean,
-      default: uni.$u.props.rate.allowHalf
-    },
-    // 选中时的图标(星星)
-    activeIcon: {
-      type: String,
-      default: uni.$u.props.rate.activeIcon
-    },
-    // 未选中时的图标(星星)
-    inactiveIcon: {
-      type: String,
-      default: uni.$u.props.rate.inactiveIcon
-    },
-    // 是否可以通过滑动手势选择评分
-    touchable: {
-      type: Boolean,
-      default: uni.$u.props.rate.touchable
-    }
-  }
-};
-exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
-
-/***/ }),
+/* 704 */,
 /* 705 */,
 /* 706 */,
 /* 707 */,
@@ -51089,34 +51473,8 @@ exports.default = _default;
 /* 709 */,
 /* 710 */,
 /* 711 */,
-/* 712 */
-/*!**************************************************************************************************************!*\
-  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-safe-bottom/props.js ***!
-  \**************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-var _default = {
-  props: {}
-};
-exports.default = _default;
-
-/***/ }),
-/* 713 */,
-/* 714 */,
-/* 715 */,
-/* 716 */,
-/* 717 */,
-/* 718 */,
-/* 719 */,
-/* 720 */
+/* 712 */,
+/* 713 */
 /*!*******************************************************************************************************!*\
   !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-link/props.js ***!
   \*******************************************************************************************************/
@@ -51171,6 +51529,33 @@ var _default = {
 };
 exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
+
+/***/ }),
+/* 714 */,
+/* 715 */,
+/* 716 */,
+/* 717 */,
+/* 718 */,
+/* 719 */,
+/* 720 */,
+/* 721 */
+/*!**************************************************************************************************************!*\
+  !*** /Users/zhangyuantao/Documents/uniapp/Ten-School/uni_modules/uview-ui/components/u-safe-bottom/props.js ***!
+  \**************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  props: {}
+};
+exports.default = _default;
 
 /***/ })
 ]]);

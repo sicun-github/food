@@ -191,7 +191,7 @@
   color: #c4c6c9;
 }
 .u-primary {
-  color: #3c9cff;
+  color: #fcc32b;
 }
 .u-warning {
   color: #f9ae3d;
@@ -206,7 +206,7 @@
   color: #909399;
 }
 .u-primary-bg {
-  background-color: #3c9cff;
+  background-color: #fcc32b;
 }
 .u-warning-bg {
   background-color: #f9ae3d;

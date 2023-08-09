@@ -3,11 +3,12 @@
   "enablePullDownRefresh": false,
   "usingComponents": {
     "u-search": "/uni_modules/uview-ui/components/u-search/u-search",
-    "u-sticky": "/uni_modules/uview-ui/components/u-sticky/u-sticky",
-    "u-tabs": "/uni_modules/uview-ui/components/u-tabs/u-tabs",
     "u-empty": "/uni_modules/uview-ui/components/u-empty/u-empty",
-    "u--image": "/uni_modules/uview-ui/components/u--image/u--image",
-    "u--text": "/uni_modules/uview-ui/components/u--text/u--text",
-    "winner-meal": "/pages/purchase/winnerMeal"
+    "u-checkbox-group": "/uni_modules/uview-ui/components/u-checkbox-group/u-checkbox-group",
+    "u-image": "/uni_modules/uview-ui/components/u-image/u-image",
+    "u-text": "/uni_modules/uview-ui/components/u-text/u-text",
+    "u-rate": "/uni_modules/uview-ui/components/u-rate/u-rate",
+    "u-checkbox": "/uni_modules/uview-ui/components/u-checkbox/u-checkbox",
+    "u-button": "/uni_modules/uview-ui/components/u-button/u-button"
   }
 }

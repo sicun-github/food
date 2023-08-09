@@ -144,7 +144,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 var _vuex = __webpack_require__(/*! vuex */ 46);
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -152,7 +152,7 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 var _default = {
   data: function data() {
     return {
-      swipers: ["https://vkceyugu.cdn.bspapp.com/VKCEYUGU-60629e12-38df-4763-b955-ace6cc304213/a3ddf7bc-6f58-46d9-8d17-2d690cfdf7ad.jpg", "https://vkceyugu.cdn.bspapp.com/VKCEYUGU-60629e12-38df-4763-b955-ace6cc304213/e8806289-431a-44b8-bb62-d1a1cb976a6e.jpg", "https://vkceyugu.cdn.bspapp.com/VKCEYUGU-60629e12-38df-4763-b955-ace6cc304213/aab51310-1bfc-4818-a6ca-b1e9c35c6437.jpg", "https://vkceyugu.cdn.bspapp.com/VKCEYUGU-60629e12-38df-4763-b955-ace6cc304213/2dcd1af0-ff5c-4f13-8819-6264c36bf112.jpg"]
+      swipers: ['https://i3.meishichina.com/atta/recipe/2016/01/26/201601264h37626muyqvmec1.jpg?x-oss-process=style/p800', 'https://i3.meishichina.com/atta/recipe/2018/12/29/2018122915460588584437828.jpg?x-oss-process=style/p800', 'https://i3.meishichina.com/atta/recipe/2021/03/22/20210322161642121707060310904953.jpg?x-oss-process=style/p800']
     };
   },
   computed: _objectSpread({}, (0, _vuex.mapState)({
@@ -173,7 +173,7 @@ var _default = {
                 return uniCloud.callFunction({
                   name: 'add',
                   data: {
-                    "message": "hello"
+                    message: 'hello'
                   }
                 });
               case 2:
@@ -228,10 +228,10 @@ var _default = {
             case 0:
               //判断是否登录，如果用户名不存在则登录
               // if(!uni.getStorageInfoSync('user_name')){
-              // 	this.$store.dispatch('login') 
+              // 	this.$store.dispatch('login')
               // }
               openid = uni.getStorageSync('openid');
-              console.log("openid:", openid);
+              console.log('openid:', openid);
               if (!openid) {
                 _context2.next = 6;
                 break;

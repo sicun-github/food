@@ -144,7 +144,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 var _vuex = __webpack_require__(/*! vuex */ 46);
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -154,17 +154,17 @@ var _default = {
   data: function data() {
     return {
       boardcast: [{
-        title: "喜茶制粽，现正预售中",
-        subtitle: "2020喜茶制粽端午礼盒",
-        coverPic: "https://go.cdn.heytea.com/storage/products/2020/05/25/d7f9a7e9ea3747778d301b443147cd82.png"
+        title: '喜茶制粽，现正预售中',
+        subtitle: '2020喜茶制粽端午礼盒',
+        coverPic: 'https://go.cdn.heytea.com/storage/products/2020/05/25/d7f9a7e9ea3747778d301b443147cd82.png'
       }, {
-        title: "来颗布蕾QQ麻薯球",
-        subtitle: "灵感之茶，与音乐共生",
-        coverPic: "https://go.cdn.heytea.com/storage/products/2020/05/25/0346c403e88243eaa76aa334097ad8ec.png"
+        title: '来颗布蕾QQ麻薯球',
+        subtitle: '灵感之茶，与音乐共生',
+        coverPic: 'https://go.cdn.heytea.com/storage/products/2020/05/25/0346c403e88243eaa76aa334097ad8ec.png'
       }, {
-        title: "喜茶星球会员升级啦",
-        subtitle: "点击了解升级详情",
-        coverPic: "https://go.cdn.heytea.com/storage/products/2020/05/08/0a11147144ff42629e6eca9eeec53215.png"
+        title: '喜茶星球会员升级啦',
+        subtitle: '点击了解升级详情',
+        coverPic: 'https://go.cdn.heytea.com/storage/products/2020/05/08/0a11147144ff42629e6eca9eeec53215.png'
       }],
       userinfo: {},
       user_pay: ''
@@ -251,7 +251,7 @@ var _default = {
             switch (_context2.prev = _context2.next) {
               case 0:
                 openid = uni.getStorageSync('openid');
-                console.log("openid:", openid);
+                console.log('openid:', openid);
                 if (openid) {
                   _this2.$store.dispatch('getUserInfo');
                 }

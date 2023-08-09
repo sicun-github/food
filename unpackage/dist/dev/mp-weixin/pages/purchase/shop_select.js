@@ -106,20 +106,26 @@ try {
     uSearch: function () {
       return Promise.all(/*! import() | uni_modules/uview-ui/components/u-search/u-search */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-search/u-search")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-search/u-search.vue */ 574))
     },
-    uSticky: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-sticky/u-sticky */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-sticky/u-sticky")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-sticky/u-sticky.vue */ 582))
-    },
-    uTabs: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-tabs/u-tabs */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-tabs/u-tabs")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-tabs/u-tabs.vue */ 406))
-    },
     uEmpty: function () {
       return Promise.all(/*! import() | uni_modules/uview-ui/components/u-empty/u-empty */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-empty/u-empty")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-empty/u-empty.vue */ 487))
     },
-    "u-Image": function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u--image/u--image */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u--image/u--image")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u--image/u--image.vue */ 590))
+    uCheckboxGroup: function () {
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-checkbox-group/u-checkbox-group */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-checkbox-group/u-checkbox-group")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-checkbox-group/u-checkbox-group.vue */ 582))
     },
-    "u-Text": function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u--text/u--text */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u--text/u--text")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u--text/u--text.vue */ 503))
+    uImage: function () {
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-image/u-image */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-image/u-image")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-image/u-image.vue */ 590))
+    },
+    uText: function () {
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-text/u-text */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-text/u-text")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-text/u-text.vue */ 598))
+    },
+    uRate: function () {
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-rate/u-rate */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-rate/u-rate")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-rate/u-rate.vue */ 606))
+    },
+    uCheckbox: function () {
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-checkbox/u-checkbox */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-checkbox/u-checkbox")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-checkbox/u-checkbox.vue */ 614))
+    },
+    uButton: function () {
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-button/u-button */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-button/u-button")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-button/u-button.vue */ 566))
     },
   }
 } catch (e) {
@@ -144,11 +150,20 @@ var render = function () {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   var g0 = _vm.ShopList.length <= 0 && _vm.showWinner == false
+  var l0 = _vm.__map(_vm.ShopList, function (item, __i0__) {
+    var $orig = _vm.__get_orig(item)
+    var g1 = _vm.selects.includes(item._id)
+    return {
+      $orig: $orig,
+      g1: g1,
+    }
+  })
   _vm.$mp.data = Object.assign(
     {},
     {
       $root: {
         g0: g0,
+        l0: l0,
       },
     }
   )
@@ -193,100 +208,19 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
-var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 30));
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
+var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
+var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
+var _dayjs = _interopRequireDefault(__webpack_require__(/*! dayjs */ 198));
+var _vuex = __webpack_require__(/*! vuex */ 46);
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 var shop = uniCloud.importObject('shop');
 var special_tool = uniCloud.importObject('special_tool');
-var winnerMeal = function winnerMeal() {
-  Promise.all(/*! require.ensure | pages/purchase/winnerMeal */[__webpack_require__.e("common/vendor"), __webpack_require__.e("pages/purchase/winnerMeal")]).then((function () {
-    return resolve(__webpack_require__(/*! ./winnerMeal.vue */ 596));
-  }).bind(null, __webpack_require__)).catch(__webpack_require__.oe);
-};
+var orderCloud = uniCloud.importObject('order');
+// import winnerMeal from './winnerMeal.vue';
 var _default = {
   components: {
-    winnerMeal: winnerMeal
+    // winnerMeal,
   },
   data: function data() {
     return {
@@ -303,9 +237,18 @@ var _default = {
           isDot: true
         }
       }],
-      ShopList: []
+      ShopList: [],
+      selects: []
     };
   },
+  computed: _objectSpread({}, (0, _vuex.mapState)({
+    user_name: function user_name(state) {
+      return state.user.userinfo.user_name;
+    },
+    user_id: function user_id(state) {
+      return state.user.openid;
+    }
+  })),
   methods: {
     search: function search() {
       var _this = this;
@@ -356,7 +299,7 @@ var _default = {
         }, _callee2);
       }))();
     },
-    getNorthShopInfo: function getNorthShopInfo() {
+    getSouthShopInfo: function getSouthShopInfo() {
       var _this3 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3() {
         var result;
@@ -365,13 +308,11 @@ var _default = {
             switch (_context3.prev = _context3.next) {
               case 0:
                 _context3.next = 2;
-                return shop.getShopByLoc('北区');
+                return shop.getShopByLoc();
               case 2:
                 result = _context3.sent;
-                console.log('%c 🎂 result: ', 'background-color: #6EC1C2;color:#fff;', result);
                 _this3.ShopList = result.data;
-                console.log(_this3.ShopList);
-              case 6:
+              case 4:
               case "end":
                 return _context3.stop();
             }
@@ -379,7 +320,7 @@ var _default = {
         }, _callee3);
       }))();
     },
-    getSouthShopInfo: function getSouthShopInfo() {
+    getWinnerMeal: function getWinnerMeal() {
       var _this4 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4() {
         var result;
@@ -388,10 +329,10 @@ var _default = {
             switch (_context4.prev = _context4.next) {
               case 0:
                 _context4.next = 2;
-                return shop.getShopByLoc('南区');
+                return special_tool.winnerMeal();
               case 2:
                 result = _context4.sent;
-                _this4.ShopList = result.data;
+                _this4.$store.commit('SET_WINNERMEAL', result.data);
               case 4:
               case "end":
                 return _context4.stop();
@@ -400,20 +341,21 @@ var _default = {
         }, _callee4);
       }))();
     },
-    getWinnerMeal: function getWinnerMeal() {
+    getInfo: function getInfo() {
       var _this5 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee5() {
-        var result;
         return _regenerator.default.wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
-                _context5.next = 2;
-                return special_tool.winnerMeal();
+                _this5.getSouthShopInfo();
+                // if (item.index == 2) {
+                // 	await this.getWinnerMeal();
+                // 	this.showWinner = true;
+                // 	return;
+                // }
+                _this5.showWinner = false;
               case 2:
-                result = _context5.sent;
-                _this5.$store.commit('SET_WINNERMEAL', result.data);
-              case 4:
               case "end":
                 return _context5.stop();
             }
@@ -421,33 +363,40 @@ var _default = {
         }, _callee5);
       }))();
     },
-    getInfo: function getInfo(item) {
+    // 选中任一checkbox时，由checkbox-group触发
+    checkboxGroupChange: function checkboxGroupChange(e) {
+      this.selects = e;
+    },
+    //下单
+    placeOrder: function placeOrder() {
       var _this6 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee6() {
+        var create_time, shop_list, order, result;
         return _regenerator.default.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                if (item.index == 0) {
-                  _this6.getSouthShopInfo();
-                  console.log(_this6.showWinner);
-                }
-                if (item.index == 1) {
-                  _this6.getNorthShopInfo();
-                  console.log(_this6.showWinner);
-                }
-                if (!(item.index == 2)) {
-                  _context6.next = 7;
-                  break;
-                }
+                create_time = (0, _dayjs.default)().format('YYYY-MM-DD HH:mm:ss');
+                shop_list = _this6.ShopList.filter(function (item) {
+                  return _this6.selects.includes(item._id);
+                });
+                order = {
+                  user_id: _this6.user_id,
+                  name: _this6.user_name,
+                  shop_list: shop_list,
+                  create_time: create_time
+                };
                 _context6.next = 5;
-                return _this6.getWinnerMeal();
+                return orderCloud.createOrder(order);
               case 5:
-                _this6.showWinner = true;
-                return _context6.abrupt("return");
+                result = _context6.sent;
+                if (result.code === 200) {
+                  uni.showToast({
+                    title: '下单成功！',
+                    duration: 2000
+                  });
+                }
               case 7:
-                _this6.showWinner = false;
-              case 8:
               case "end":
                 return _context6.stop();
             }

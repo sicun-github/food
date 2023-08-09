@@ -23,6 +23,7 @@
 }
 .banner-swiper .banner-swiper-item image.data-v-71e217db {
   width: 100%;
+  height: 100%;
 }
 .context.data-v-71e217db {
   box-sizing: border-box;

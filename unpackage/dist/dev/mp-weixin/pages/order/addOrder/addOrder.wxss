@@ -1,0 +1,182 @@
+@charset "UTF-8";
+/* 水平间距 */
+/* 水平间距 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container .icon.data-v-5e0219e5 {
+  width: 40rpx;
+  height: 40rpx;
+}
+.container .phone.data-v-5e0219e5 {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 30rpx;
+  height: 100rpx;
+  background-color: #fff;
+  align-items: center;
+}
+.container .phone .left.data-v-5e0219e5 {
+  font-size: 28rpx;
+  flex: 1;
+  display: flex;
+}
+.container .phone .right text.data-v-5e0219e5 {
+  color: #DBA871;
+  font-size: 26rpx;
+  border: 2rpx solid #DBA871;
+  padding: 0 2rpx;
+}
+.container .getTime.data-v-5e0219e5 {
+  display: flex;
+  flex-direction: column;
+  padding-left: 30rpx;
+  font-size: 28rpx;
+  margin-top: 20rpx;
+  font-weight: bold;
+  background-color: #fff;
+  height: 150rpx;
+  justify-content: center;
+}
+.container .goodList.data-v-5e0219e5 {
+  margin-top: 20rpx;
+  padding-left: 30rpx;
+  background-color: #fff;
+}
+.container .goodList .good.data-v-5e0219e5 {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2rpx solid #eee;
+}
+.container .goodList .good .title.data-v-5e0219e5 {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+.container .goodList .good .List.data-v-5e0219e5 {
+  margin-top: 80rpx;
+  display: flex;
+  align-items: center;
+}
+.container .goodList .good .List .left.data-v-5e0219e5 {
+  max-width: 75%;
+  white-space: nowrap;
+}
+.container .goodList .good .List .left image.data-v-5e0219e5 {
+  height: 100rpx;
+  margin-right: 20rpx;
+  border-radius: 10rpx;
+}
+.container .goodList .good .List .right.data-v-5e0219e5 {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 27rpx;
+}
+.container .goodList .good .List .right image.data-v-5e0219e5 {
+  width: 40rpx;
+  height: 40rpx;
+}
+.container .goodList .coupon.data-v-5e0219e5, .container .goodList .remark.data-v-5e0219e5, .container .goodList .address.data-v-5e0219e5 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100rpx;
+}
+.container .goodList .coupon .left.data-v-5e0219e5, .container .goodList .remark .left.data-v-5e0219e5, .container .goodList .address .left.data-v-5e0219e5 {
+  font-size: 28rpx;
+}
+.container .goodList .coupon .left .quan.data-v-5e0219e5, .container .goodList .remark .left .quan.data-v-5e0219e5, .container .goodList .address .left .quan.data-v-5e0219e5 {
+  font-size: 20rpx;
+  background-color: #DBA871;
+  color: #fff;
+  margin-left: 4rpx;
+  padding: 2rpx 4rpx;
+}
+.container .goodList .coupon .right.data-v-5e0219e5, .container .goodList .remark .right.data-v-5e0219e5, .container .goodList .address .right.data-v-5e0219e5 {
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  color: #949494;
+}
+.container .goodList .remark .right.data-v-5e0219e5 {
+  color: #343434;
+}
+.container .goodList .remark .right text.data-v-5e0219e5 {
+  max-width: 200rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.container .goodList .address .right.data-v-5e0219e5 {
+  color: #343434;
+}
+.container .goodList .address .right text.data-v-5e0219e5 {
+  max-width: 400rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.container .goodList .total.data-v-5e0219e5 {
+  height: 100rpx;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 26rpx;
+  padding-right: 30rpx;
+}
+.container .pay.data-v-5e0219e5 {
+  margin-top: 40rpx;
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+  background-color: #fff;
+}
+.container .pay .left.data-v-5e0219e5 {
+  font-size: 28rpx;
+}
+.container .pay .right.data-v-5e0219e5 {
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+}
+.container .settle.data-v-5e0219e5 {
+  height: 110rpx;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  background-color: #fff;
+  display: flex;
+}
+.container .settle .left.data-v-5e0219e5 {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 26rpx;
+  margin-right: 20rpx;
+}
+.container .settle .right.data-v-5e0219e5 {
+  width: 225rpx;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #409eeb;
+  color: #fff;
+  font-size: 36rpx;
+}
+

@@ -1,0 +1,60 @@
+@charset "UTF-8";
+/* 水平间距 */
+/* 水平间距 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container.data-v-398dc95e {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20rpx;
+  margin-top: 20rpx;
+}
+.container .shop.data-v-398dc95e {
+  box-sizing: border-box;
+  border-radius: 10rpx;
+  padding: 10rpx;
+  padding-top: 15rpx;
+  border: 1rpx solid #eee;
+  width: 100%;
+  box-shadow: 0 20rpx 20rpx -20rpx rgba(51, 51, 51, 0.1);
+  display: flex;
+  justify-content: space-between;
+}
+.container .shop .left.data-v-398dc95e {
+  display: flex;
+  flex-direction: column;
+}
+.container .shop .left .icon-text.data-v-398dc95e {
+  display: flex;
+  margin-right: 10rpx;
+}
+.container .shop .left .icon-text-container.data-v-398dc95e {
+  margin-top: 10rpx;
+  display: flex;
+}
+.container .shop .left .info.data-v-398dc95e {
+  font-size: 22rpx;
+  margin-top: 10rpx;
+}
+.container .shop .left .title.data-v-398dc95e {
+  display: flex;
+  font-size: 32rpx;
+  font-weight: 600;
+  align-items: center;
+}
+.container .shop .left .title image.data-v-398dc95e {
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+}
+

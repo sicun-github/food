@@ -1,0 +1,129 @@
+@charset "UTF-8";
+/* 水平间距 */
+/* 水平间距 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container.data-v-80842834 {
+  width: 100%;
+  position: relative;
+}
+.container .img-container ._img.data-v-80842834 {
+  width: 100%;
+  height: 750rpx;
+}
+.container .context.data-v-80842834 {
+  position: absolute;
+  box-sizing: border-box;
+  width: 100%;
+  height: 600rpx;
+  margin-top: -200rpx;
+  background-color: #f8f8f8;
+}
+.container .context .avatar.data-v-80842834 {
+  width: 100%;
+  display: flex;
+  box-sizing: border-box;
+  padding: 40rpx 40rpx 0 40rpx;
+  background-color: #ffffff;
+  justify-content: flex-end;
+  justify-content: space-between;
+}
+.container .context .avatar .left.data-v-80842834 {
+  font-size: 40rpx;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-weight: bold;
+}
+.container .context .avatar .left .introduce.data-v-80842834 {
+  display: flex;
+  flex-direction: column;
+}
+.container .context .avatar .left .introduce .welcome.data-v-80842834 {
+  margin-top: 10rpx;
+  font-size: 30rpx;
+  font-weight: normal;
+}
+.container .context .avatar .right image.data-v-80842834 {
+  width: 125rpx;
+  height: 125rpx;
+  border-radius: 100rpx;
+}
+.container .context .row.data-v-80842834 {
+  margin-top: 20rpx;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+}
+.container .context .row .grid.data-v-80842834 {
+  flex: 1;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.container .context .row .grid image.data-v-80842834 {
+  width: 100rpx;
+  height: 100rpx;
+}
+.container .context .row .grid .value.data-v-80842834 {
+  font-family: 'neutra';
+  margin-bottom: 10rpx;
+  font-size: 32rpx;
+}
+.container .context .row .grid .title.data-v-80842834 {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 20rpx;
+}
+.container .context .xinqiubobao.data-v-80842834 {
+  padding: 40rpx 40rpx 0 40rpx;
+  width: 100%;
+  position: relative;
+}
+.container .context .xinqiubobao .title.data-v-80842834 {
+  margin: 10rpx 0;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+.container .context .xinqiubobao .swiper.data-v-80842834 {
+  height: 200rpx;
+  margin-bottom: 10rpx;
+}
+.container .context .xinqiubobao .swiper .swiper-item .swiper-item-wrapper.data-v-80842834 {
+  display: flex;
+  background-color: #ffffff;
+  padding: 40rpx 60rpx;
+  border-radius: 6rpx;
+  align-items: center;
+  margin-right: 40rpx;
+}
+.container .context .xinqiubobao .swiper .swiper-item .swiper-item-wrapper image.data-v-80842834 {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 100%;
+  margin-right: 20rpx;
+}
+.container .context .xinqiubobao .swiper .swiper-item .swiper-item-wrapper .desc.data-v-80842834 {
+  display: flex;
+  flex-direction: column;
+}
+.container .context .xinqiubobao .swiper .swiper-item .swiper-item-wrapper .desc .title.data-v-80842834 {
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 10rpx;
+}
+.container .context .xinqiubobao .swiper .swiper-item .swiper-item-wrapper .desc .desc.data-v-80842834 {
+  font-size: 24rpx;
+  color: #666;
+}
+

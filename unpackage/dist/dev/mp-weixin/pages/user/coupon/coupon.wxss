@@ -1,0 +1,67 @@
+@charset "UTF-8";
+/* 水平间距 */
+/* 水平间距 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container .coupon.data-v-e01bd4b8 {
+  padding: 0 20rpx;
+  border-radius: 10rpx;
+  margin-top: 20rpx;
+  box-shadow: 0 20rpx 20rpx -20rpx rgba(51, 51, 51, 0.1);
+}
+.container .coupon .top.data-v-e01bd4b8 {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  height: 200rpx;
+  border-bottom: 2rpx solid #c9cecb;
+}
+.container .coupon .top .center.data-v-e01bd4b8 {
+  flex: 1;
+  display: flex;
+  font-size: 32rpx;
+  flex-direction: column;
+  color: #333333;
+  margin-left: 20rpx;
+  font-weight: bold;
+}
+.container .coupon .top .left.data-v-e01bd4b8 {
+  display: flex;
+  justify-content: center;
+  font-size: 70rpx;
+  align-items: baseline;
+  color: #d7ab85;
+  width: 150rpx;
+}
+.container .coupon .top .right.data-v-e01bd4b8 {
+  width: 120rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  margin-right: 30rpx;
+  border-radius: 5rpx;
+  color: #fff;
+  background-color: #d7ab85;
+}
+.container .coupon .bottom.data-v-e01bd4b8 {
+  background-color: #f8f8f8;
+  padding-left: 30rpx;
+  font-size: 27rpx;
+  height: 80rpx;
+  color: #6e716f;
+  display: flex;
+  align-items: center;
+}
+

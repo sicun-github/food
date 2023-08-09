@@ -1,0 +1,1 @@
+<view class="input_container data-v-7f08b54c"><text class="title data-v-7f08b54c">{{title}}</text><input class="input data-v-7f08b54c" type="text" name placeholder="{{placeholder}}" data-event-opts="{{[['input',[['$emit',['input','$0'],['$event.target.value']]]]]}}" value="{{value}}" bindinput="__e"/><slot></slot></view>

@@ -1,0 +1,58 @@
+@charset "UTF-8";
+/* 水平间距 */
+/* 水平间距 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container .card_container.data-v-744408f2 {
+  padding: 10rpx 10rpx;
+}
+.container .card_container .card.data-v-744408f2 {
+  padding: 15rpx;
+  border-radius: 10rpx;
+  background-color: #fff;
+  margin-bottom: 10rpx;
+  display: flex;
+}
+.container .card_container .card .right.data-v-744408f2 {
+  flex: 1;
+  margin-left: 10rpx;
+}
+.container .card_container .card .right .title.data-v-744408f2 {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+.container .card_container .card .right .title .right1.data-v-744408f2 {
+  display: flex;
+}
+.container .card_container .card .right .title .right1 .on.data-v-744408f2 {
+  font-size: 22rpx;
+  font-weight: bold;
+  border-radius: 10rpx;
+  padding: 5rpx;
+}
+.container .card_container .card .right .text_info.data-v-744408f2 {
+  display: flex;
+  margin-top: 5rpx;
+  font-size: 22rpx;
+}
+.container .card_container .card .right .stand_container .stand.data-v-744408f2 {
+  background-color: #fdf6ec;
+  font-size: 22rpx;
+  border-radius: 10rpx;
+  padding: 5rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

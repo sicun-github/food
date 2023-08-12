@@ -1,0 +1,34 @@
+{
+	"bsonType": "object",
+	"required": [],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "ID，系统自动生成"
+		},
+		"hole_id": {
+			"description": "id"
+		},
+		"hole_type": {
+			"description": "类型"
+		},
+		"user_id": {
+			"description": "用户id"
+		},
+		"user_name": {
+			"description": "用户名称"
+		},
+		"hole_content": {
+			"description": "内容"
+		},
+		"hole_img": { "description": "图片" },
+		"hole_addtime": {
+			"description": "创建时间"
+		}
+	}
+}

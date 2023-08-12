@@ -3,7 +3,7 @@
 		<view class="img-container">
 			<image
 				style="width: 100%; height: 500rpx"
-				src="https://img0.baidu.com/it/u=627135746,2610004048&fm=253&fmt=auto&app=138&f=PNG?w=256&h=256"
+				src="../../static/logo.jpg"
 				mode="aspectFit"
 			/>
 		</view>

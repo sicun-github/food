@@ -28,13 +28,16 @@ module.exports = {
 	},
 	async getShopByLoc(shop_loc) {
 		//输入店铺所属区域shop_loc
-		let res = await shop_list.get().catch((err) => {
-			return {
-				code: 500,
-				msg: '所属区域内店铺查询失败',
-				data: null,
-			};
-		});
+		let res = await shop_list
+			.orderBy('create_time', 'desc')
+			.get()
+			.catch((err) => {
+				return {
+					code: 500,
+					msg: '所属区域内店铺查询失败',
+					data: null,
+				};
+			});
 		return {
 			code: 200,
 			msg: '查询所属区域内店铺列表成功',

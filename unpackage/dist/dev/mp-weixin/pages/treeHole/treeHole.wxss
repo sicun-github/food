@@ -15,10 +15,14 @@
 /* 文章场景相关 */
 .u-page {
   padding: 0 30rpx;
+  background-color: white;
 }
 .u-page .u-demo-block {
-  margin-top: 20rpx;
+  padding-top: 20rpx;
   border-bottom: 2rpx solid #eee;
+}
+.u-page .album__avatar {
+  background-color: white !important;
 }
 .u-page .u-demo-block__content {
   margin-bottom: 10rpx;

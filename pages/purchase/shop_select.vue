@@ -1,15 +1,18 @@
 <template>
 	<view class="container">
-		<u-search
-			:clearabled="true"
-			margin="20rpx 20rpx"
-			bgColor="#fff"
-			placeholder="搜索菜品名称"
-			borderColor="#eee"
-			@search="search"
-			:showAction="false"
-			v-model="keyword"
-		></u-search>
+		<view class="search">
+			<u-search
+				:clearabled="true"
+				margin="20rpx 20rpx"
+				bgColor="#fff"
+				placeholder="搜索菜品名称"
+				borderColor="#eee"
+				@search="search"
+				@clear="clear"
+				:showAction="false"
+				v-model="keyword"
+			></u-search>
+		</view>
 		<u-empty
 			v-if="ShopList.length <= 0 && showWinner == false"
 			mode="data"
@@ -17,10 +20,15 @@
 			icon="http://cdn.uviewui.com/uview/empty/data.png"
 		>
 		</u-empty>
-		<view style="padding-bottom: 90rpx">
-			<u-checkbox-group wrap @change="checkboxGroupChange" shape="circle">
+		<view style="padding-top: 110rpx">
+			<u-checkbox-group wrap shape="circle" @chenge="checkboxGroupChange">
 				<view class="card_container" v-show="!showWinner">
-					<view class="card" v-for="item in ShopList" :key="item._id">
+					<view
+						class="card"
+						v-for="item in ShopList"
+						:key="item._id"
+						@click="handleSelect(item._id)"
+					>
 						<u-image
 							:src="item.shop_img"
 							width="200rpx"
@@ -44,14 +52,16 @@
 								<u-rate
 									active-color="#FA3534"
 									inactive-color="#b2b2b2"
-									:v-model="item.shop_star"
+									v-model="item.shop_star"
+									disabled
 								></u-rate>
 							</view>
 						</view>
 						<view style="margin-left: 10rpx">
 							<u-checkbox
 								active-color="#FCC32B"
-								:v-model="selects.includes(item._id)"
+								@change="(e) => checkboxChange(e, item._id)"
+								:checked="selects.includes(item._id)"
 								:name="item._id"
 							></u-checkbox>
 						</view>
@@ -81,6 +91,7 @@ export default {
 		return {
 			keyword: '',
 			showWinner: false,
+			value: 4,
 			lineBg:
 				'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAOCAYAAABdC15GAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFxSURBVHgBzZNRTsJAEIb/WTW+lpiY+FZPIDew3ABP4GJ8hxsI9zBpOYHeQDwBPQI+mRiRvpLojtPdYhCorQqF/6GdbGd2vvwzBXZcNAt4oj1ANeUoAT5iqkUjbEFLHNmhD1YPEvpZ3ghkGlVDCkc94/BmHMq998I5ONiY1ZBfpKAyuOtgAc5yOEDmYEWNh32BHF91sGHZHmwW4azciN9aQwnz3SJEgOmte+R2tdLprTYoa50mvuomlLpD4Y3oQZnov6D2RzCqI93bWOHaEmAGqQUyRBlZR1WfarcD/EJ2z8DtzDGvsMCwpm8XOCfDUsVOCYhiqRxI/CTQo4UOvjzO7Pow18vfywneuUHHUUxLn55lLw5JFpZ8bEUcY8oXdOLWiHLTxvoGpLqoUmy6dBT15o/ox3znpoycAmxUsiJTbs1cmxeVKp+0zmFIS7bGWiVghC7Vwse8jFKAX9eljh4ggKLLv7uaQvG9/F59Oo2SouxPu7OTCxN/s8wAAAAASUVORK5CYII=',
 			list1: [
@@ -109,12 +120,17 @@ export default {
 	},
 	methods: {
 		async search() {
-			console.log(this.keyword);
 			const shop = uniCloud.importObject('shop');
 			let res = await shop.searchShop({ name: this.keyword });
 			if (res.code == 200) {
 				this.ShopList = res.data;
 			}
+		},
+
+		//清除
+		async clear() {
+			this.keyword = '';
+			this.getSouthShopInfo();
 		},
 		async gotoPurchase(shop_id) {
 			this.$store.commit('SET_SHOP_ID', shop_id);
@@ -129,6 +145,10 @@ export default {
 		async getSouthShopInfo() {
 			let result = await shop.getShopByLoc();
 			this.ShopList = result.data;
+			this.ShopList = this.ShopList.map((item) => {
+				item.checked = false;
+				return item;
+			});
 		},
 
 		async getWinnerMeal() {
@@ -149,10 +169,35 @@ export default {
 		checkboxGroupChange(e) {
 			this.selects = e;
 		},
+		// 选中某个复选框时，由checkbox时触发
+		checkboxChange(e, id) {
+			if (e) {
+				this.selects.push(id);
+			} else {
+				this.selects = this.selects.filter((item) => item !== id);
+			}
+		},
 
+		//选择
+		handleSelect(id) {
+			if (this.selects.includes(id)) {
+				this.selects = this.selects.filter((item) => item !== id);
+			} else {
+				this.selects.push(id);
+			}
+			this.$forceUpdate();
+		},
 		//下单
 		async placeOrder() {
-			const create_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
+			if (this.selects.length == 0) {
+				return uni.showToast({
+					icon: 'none',
+					title: '请选择菜品！',
+					duration: 2000,
+				});
+			}
+			// const create_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
+			const create_time = new Date();
 			const shop_list = this.ShopList.filter((item) => {
 				return this.selects.includes(item._id);
 			});
@@ -168,6 +213,7 @@ export default {
 					title: '下单成功！',
 					duration: 2000,
 				});
+				this.selects = [];
 			}
 		},
 	},
@@ -185,6 +231,8 @@ page {
 <style lang="scss" scoped>
 .container {
 	.card_container {
+		height: calc(100vh - 190rpx);
+		overflow-y: scroll;
 		padding: 10rpx 10rpx;
 
 		.card {
@@ -237,11 +285,24 @@ page {
 		}
 	}
 
+	.search {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		background-color: white;
+		z-index: 999;
+	}
+
 	.but {
 		position: fixed;
 		bottom: 0;
 		left: 0;
 		right: 0;
 	}
+}
+
+::v-deep .uicon-star-fill {
+	color: rgb(230, 50, 50) !important;
 }
 </style>

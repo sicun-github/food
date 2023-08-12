@@ -152,7 +152,7 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 var _default = {
   data: function data() {
     return {
-      swipers: ['https://i3.meishichina.com/atta/recipe/2016/01/26/201601264h37626muyqvmec1.jpg?x-oss-process=style/p800', 'https://i3.meishichina.com/atta/recipe/2018/12/29/2018122915460588584437828.jpg?x-oss-process=style/p800', 'https://i3.meishichina.com/atta/recipe/2021/03/22/20210322161642121707060310904953.jpg?x-oss-process=style/p800']
+      swipers: ['https://i3.meishichina.com/atta/recipe/201102/201102200859330.jpg?x-oss-process=style/p800', 'https://i3.meishichina.com/atta/recipe/2018/12/29/2018122915460588584437828.jpg?x-oss-process=style/p800', 'https://i3.meishichina.com/atta/recipe/2018/02/06/2018020615179140581361846401.jpg?x-oss-process=style/p800']
     };
   },
   computed: _objectSpread({}, (0, _vuex.mapState)({

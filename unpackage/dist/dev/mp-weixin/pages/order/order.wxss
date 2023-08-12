@@ -93,4 +93,46 @@
   align-items: center;
   justify-content: center;
 }
+.card.data-v-127632e4 {
+  padding: 15rpx 0;
+  border-radius: 10rpx;
+  background-color: #fff;
+  margin-bottom: 10rpx;
+  display: flex;
+  align-items: center;
+}
+.card .right.data-v-127632e4 {
+  flex: 1;
+  margin-left: 10rpx;
+}
+.card .right .title.data-v-127632e4 {
+  display: flex;
+}
+.card .right .title .on.data-v-127632e4 {
+  background-color: #ecf5ff;
+  font-size: 22rpx;
+  border-radius: 10rpx;
+  padding: 5rpx;
+}
+.card .right .text_info.data-v-127632e4 {
+  display: flex;
+  margin-top: 5rpx;
+  font-size: 22rpx;
+}
+.card .right .text_info .u-info.data-v-127632e4 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+.card .right .stand_container .stand.data-v-127632e4 {
+  background-color: #fdf6ec;
+  font-size: 22rpx;
+  border-radius: 10rpx;
+  padding: 5rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 

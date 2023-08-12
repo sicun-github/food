@@ -102,7 +102,7 @@ var components
 try {
   components = {
     uCountTo: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-count-to/u-count-to */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-count-to/u-count-to")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-count-to/u-count-to.vue */ 622))
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-count-to/u-count-to */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-count-to/u-count-to")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-count-to/u-count-to.vue */ 615))
     },
   }
 } catch (e) {

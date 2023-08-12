@@ -23,6 +23,9 @@
 		},
 		"shop_star": {
 			"description": "食物星星"
+		},
+		"create_time": {
+			"description": "创建时间"
 		}
 	}
 }

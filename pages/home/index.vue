@@ -43,9 +43,9 @@
 				</view>
 			</view> -->
 
-			<!-- <view class="image" @click="gotoTreeHole">
+			<view class="image" @click="gotoTreeHole">
 				<image src="../../static/shudon.jpg" mode="widthFix"></image>
-			</view> -->
+			</view>
 		</view>
 	</view>
 </template>
@@ -56,9 +56,9 @@ export default {
 	data() {
 		return {
 			swipers: [
-				'https://i3.meishichina.com/atta/recipe/2016/01/26/201601264h37626muyqvmec1.jpg?x-oss-process=style/p800',
+				'https://i3.meishichina.com/atta/recipe/201102/201102200859330.jpg?x-oss-process=style/p800',
 				'https://i3.meishichina.com/atta/recipe/2018/12/29/2018122915460588584437828.jpg?x-oss-process=style/p800',
-				'https://i3.meishichina.com/atta/recipe/2021/03/22/20210322161642121707060310904953.jpg?x-oss-process=style/p800',
+				'https://i3.meishichina.com/atta/recipe/2018/02/06/2018020615179140581361846401.jpg?x-oss-process=style/p800',
 			],
 		};
 	},
@@ -217,7 +217,6 @@ export default {
 		width: 100%;
 		image {
 			border-radius: 5rpx;
-			border: 1rpx solid #a3a3a3;
 			width: 100%;
 		}
 	}

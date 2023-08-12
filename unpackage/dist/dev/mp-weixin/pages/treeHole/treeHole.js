@@ -102,31 +102,10 @@ var components
 try {
   components = {
     "u-Text": function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u--text/u--text */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u--text/u--text")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u--text/u--text.vue */ 503))
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u--text/u--text */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u--text/u--text")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u--text/u--text.vue */ 554))
     },
     uAlbum: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-album/u-album */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-album/u-album")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-album/u-album.vue */ 509))
-    },
-    uniTransition: function () {
-      return Promise.all(/*! import() | uni_modules/uni-transition/components/uni-transition/uni-transition */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-transition/components/uni-transition/uni-transition")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-transition/components/uni-transition/uni-transition.vue */ 517))
-    },
-    uIcon: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-icon/u-icon */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-icon/u-icon")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-icon/u-icon.vue */ 523))
-    },
-    uLoadmore: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-loadmore/u-loadmore */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-loadmore/u-loadmore")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-loadmore/u-loadmore.vue */ 398))
-    },
-    uniPopup: function () {
-      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 422))
-    },
-    uniPopupDialog: function () {
-      return Promise.all(/*! import() | uni_modules/uni-popup/components/uni-popup-dialog/uni-popup-dialog */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-popup/components/uni-popup-dialog/uni-popup-dialog")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup-dialog/uni-popup-dialog.vue */ 475))
-    },
-    uNotify: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-notify/u-notify */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-notify/u-notify")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-notify/u-notify.vue */ 495))
-    },
-    uActionSheet: function () {
-      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-action-sheet/u-action-sheet */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-action-sheet/u-action-sheet")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-action-sheet/u-action-sheet.vue */ 532))
+      return Promise.all(/*! import() | uni_modules/uview-ui/components/u-album/u-album */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uview-ui/components/u-album/u-album")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uview-ui/components/u-album/u-album.vue */ 559))
     },
   }
 } catch (e) {
@@ -154,19 +133,12 @@ var render = function () {
     var $orig = _vm.__get_orig(item)
     var g0 = item.hole_img.length
     var m0 = _vm.getTime(item.hole_addtime)
-    var g1 = item._comment.length
     return {
       $orig: $orig,
       g0: g0,
       m0: m0,
-      g1: g1,
     }
   })
-  if (!_vm._isMounted) {
-    _vm.e0 = function ($event) {
-      _vm.showAction = false
-    }
-  }
   _vm.$mp.data = Object.assign(
     {},
     {
@@ -218,7 +190,7 @@ exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 28));
 var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 31));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
-var _dayjs = _interopRequireDefault(__webpack_require__(/*! dayjs */ 198));
+var _dayjs = _interopRequireDefault(__webpack_require__(/*! dayjs */ 265));
 var _vuex = __webpack_require__(/*! vuex */ 46);
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
@@ -350,88 +322,40 @@ var _default = {
       this.showComment = false;
     },
     getTime: function getTime(time) {
-      return (0, _dayjs.default)(time).format("YYYY-MM-DD HH:mm");
+      return (0, _dayjs.default)(time).format('YYYY-MM-DD HH:mm');
     },
     getTreeHole: function getTreeHole() {
       var _arguments = arguments,
         _this3 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3() {
-        var start, result, _result;
+        var start, result;
         return _regenerator.default.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
                 start = _arguments.length > 0 && _arguments[0] !== undefined ? _arguments[0] : 0;
-                if (!(_this3.status == 'nomore')) {
-                  _context3.next = 3;
-                  break;
-                }
-                return _context3.abrupt("return");
-              case 3:
-                _context3.prev = 3;
-                if (!(start == 0)) {
-                  _context3.next = 11;
-                  break;
-                }
-                _context3.next = 7;
+                _context3.next = 3;
                 return treeHole.getAllHole({
                   start: start
                 });
-              case 7:
+              case 3:
                 result = _context3.sent;
                 if (result.code == 200) {
                   _this3.HoleList = result.data;
-                  console.log(_this3.HoleList);
-                } else {
-                  _this3.status = nomore;
                 }
-                _context3.next = 18;
-                break;
-              case 11:
-                if (!(_this3.status == 'loadmore')) {
-                  _context3.next = 18;
-                  break;
-                }
-                _this3.status = 'loading';
-                _context3.next = 15;
-                return treeHole.getAllHole({
-                  start: start
-                });
-              case 15:
-                _result = _context3.sent;
-                console.log(_result);
-                if (_result != null && _result.code == 200) {
-                  _this3.HoleList = _this3.HoleList.concat(_result.data);
-                  if (_result.data.length < 6) {
-                    _this3.status = 'nomore';
-                  } else {
-                    _this3.status = 'loadmore';
-                  }
-                } else {
-                  _this3.status = 'nomore';
-                }
-              case 18:
-                _context3.next = 24;
-                break;
-              case 20:
-                _context3.prev = 20;
-                _context3.t0 = _context3["catch"](3);
-                //TODO handle the exception
-                console.log("error", _context3.t0);
-                _this3.status = 'nomore';
-              case 24:
+              case 5:
               case "end":
                 return _context3.stop();
             }
           }
-        }, _callee3, null, [[3, 20]]);
+        }, _callee3);
       }))();
     }
   },
-  onReachBottom: function onReachBottom() {
-    console.log(this.HoleList[this.HoleList.length - 1]._id);
-    this.getTreeHole(this.HoleList[this.HoleList.length - 1]._id);
-  },
+  // onReachBottom() {
+  // 	console.log(this.HoleList[this.HoleList.length - 1]._id);
+  // 	this.getTreeHole(this.HoleList[this.HoleList.length - 1]._id);
+  // },
   onLoad: function onLoad() {
     this.getTreeHole();
   }

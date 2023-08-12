@@ -77,7 +77,6 @@
 }
 .context .image image.data-v-71e217db {
   border-radius: 5rpx;
-  border: 1rpx solid #a3a3a3;
   width: 100%;
 }
 .context .credit.data-v-71e217db {

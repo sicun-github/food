@@ -49,6 +49,9 @@
 						</view>
 					</view>
 				</u-read-more>
+				<view style="color: #999; font-size: 28rpx"
+					>订单人：{{ order.name }}</view
+				>
 				<view style="margin-top: 20rpx">
 					<u-row gutter="6" justify="end">
 						<u-col span="3">
@@ -111,6 +114,7 @@ export default {
 		...mapState({
 			user_name: (state) => state.user.userinfo.user_name,
 			user_id: (state) => state.user.openid,
+			user_admin: (state) => state.user.user_admin,
 		}),
 	},
 	methods: {
@@ -119,6 +123,7 @@ export default {
 			let result = await orderCloud.getUserOrder({
 				user_id,
 				type: this.current,
+				admin: this.user_admin,
 			});
 			if (result.code == 200) {
 				this.OrderList = result.data;
@@ -181,6 +186,12 @@ export default {
 	},
 	onLoad() {
 		this.getOrderList();
+	},
+	onShareAppMessage(res) {
+		return {
+			title: '美食日历',
+			path: '/pages/home/index',
+		};
 	},
 };
 </script>
@@ -295,6 +306,9 @@ $less-size: 28rpx;
 	.right {
 		flex: 1;
 		margin-left: 10rpx;
+		height: 200rpx;
+		display: flex;
+		flex-direction: column;
 		.title {
 			display: flex;
 			.on {

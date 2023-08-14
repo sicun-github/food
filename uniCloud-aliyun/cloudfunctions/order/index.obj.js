@@ -40,12 +40,15 @@ module.exports = {
 	async getUserOrder(event) {
 		var today = new Date().toLocaleDateString();
 		const _ = db.command;
-		const query = {
-			// 在这里添加其他查询条件，如果需要的话
-			user_id: event.user_id,
-		};
+		const query = {};
+		if (event.user_admin === false) {
+			query = {
+				// 在这里添加其他查询条件，如果需要的话
+				user_id: event.user_id,
+			};
+		}
 		if (event.type == 0) {
-			query.create_time = _.and(
+			query.time = _.and(
 				_.gte(new Date(today + ' 00:00:00')),
 				_.lte(new Date(today + ' 23:59:59'))
 			);

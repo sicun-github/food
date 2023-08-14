@@ -131,6 +131,12 @@ export default {
 			}
 		},
 	},
+	onShareAppMessage(res) {
+		return {
+			title: '美食日历',
+			path: '/pages/home/index',
+		};
+	},
 };
 </script>
 

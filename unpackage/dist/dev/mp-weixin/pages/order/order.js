@@ -311,6 +311,9 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 //
 //
 //
+//
+//
+//
 
 var orderCloud = uniCloud.importObject('order');
 var _default = {
@@ -335,6 +338,9 @@ var _default = {
     },
     user_id: function user_id(state) {
       return state.user.openid;
+    },
+    user_admin: function user_admin(state) {
+      return state.user.user_admin;
     }
   })),
   methods: {
@@ -350,7 +356,8 @@ var _default = {
                 _context.next = 3;
                 return orderCloud.getUserOrder({
                   user_id: user_id,
-                  type: _this.current
+                  type: _this.current,
+                  admin: _this.user_admin
                 });
               case 3:
                 result = _context.sent;
@@ -467,6 +474,12 @@ var _default = {
   },
   onLoad: function onLoad() {
     this.getOrderList();
+  },
+  onShareAppMessage: function onShareAppMessage(res) {
+    return {
+      title: '美食日历',
+      path: '/pages/home/index'
+    };
   }
 };
 exports.default = _default;

@@ -68,11 +68,7 @@ module.exports = {
 					user_id: res.data[i].user_id,
 				})
 				.get();
-			console.log(
-				'%c 🎂 user: ',
-				'background-color: #6EC1C2;color:#fff;',
-				user
-			);
+
 			res.data[i].user_name = user.data[0].user_name;
 			res.data[i].user_avatar = user.data[0].user_avatar;
 		}

@@ -20,6 +20,9 @@
 			"title": "name",
 			"trim": "both"
 		},
+		"user_admin": {
+			"description": "用户身份"
+		},
 		"user_avatar": {
 			"bsonType": "string",
 			"description": "用户头像地址",

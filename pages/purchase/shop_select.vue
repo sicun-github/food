@@ -31,22 +31,26 @@
 					>
 						<u-image
 							:src="item.shop_img"
+							showLoading
+							lazyLoad
 							width="200rpx"
 							height="200rpx"
 							radius="10rpx"
 						></u-image>
 						<view class="right">
-							<view class="title">
-								<u-text
-									:lines="1"
-									bold
-									:text="item.shop_name"
-									size="30rpx"
-								></u-text>
-							</view>
+							<view>
+								<view class="title">
+									<u-text
+										:lines="1"
+										bold
+										:text="item.shop_name"
+										size="30rpx"
+									></u-text>
+								</view>
 
-							<view class="text_info">
-								<text class="u-info">{{ item.shop_desc }}</text>
+								<view class="text_info">
+									<text class="u-info">{{ item.shop_desc }}</text>
+								</view>
 							</view>
 							<view class="stand_container" style="margin-top: 15rpx">
 								<u-rate
@@ -57,7 +61,7 @@
 								></u-rate>
 							</view>
 						</view>
-						<view style="margin-left: 10rpx">
+						<view style="margin-left: 10rpx" v-if="ShopList.length > 0">
 							<u-checkbox
 								active-color="#FCC32B"
 								@change="(e) => checkboxChange(e, item._id)"
@@ -196,8 +200,9 @@ export default {
 					duration: 2000,
 				});
 			}
-			// const create_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
-			const create_time = new Date();
+			const create_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
+			const time = new Date();
+
 			const shop_list = this.ShopList.filter((item) => {
 				return this.selects.includes(item._id);
 			});
@@ -206,6 +211,7 @@ export default {
 				name: this.user_name,
 				shop_list,
 				create_time,
+				time,
 			};
 			const result = await orderCloud.createOrder(order);
 			if (result.code === 200) {
@@ -219,6 +225,16 @@ export default {
 	},
 	onLoad() {
 		this.getSouthShopInfo();
+	},
+	// onPullDownRefresh() {
+	// 	this.getSouthShopInfo();
+	// 	uni.stopPullDownRefresh();
+	// },
+	onShareAppMessage(res) {
+		return {
+			title: '美食日历',
+			path: '/pages/home/index',
+		};
 	},
 };
 </script>
@@ -245,6 +261,10 @@ page {
 			.right {
 				flex: 1;
 				margin-left: 10rpx;
+				height: 200rpx;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
 				.title {
 					display: flex;
 					.on {

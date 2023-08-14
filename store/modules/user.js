@@ -9,6 +9,7 @@ const state = {
 		user_wallet: '',
 		user_coupon: '',
 		user_phone: '',
+		user_admin: false,
 	},
 	address: {},
 	isLogin: false,
@@ -38,6 +39,7 @@ const mutations = {
 			user_wallet,
 			user_coupon,
 			user_phone,
+			user_admin,
 		} = userinfo;
 		state.userinfo = {
 			user_name,
@@ -46,6 +48,7 @@ const mutations = {
 			user_wallet,
 			user_coupon,
 			user_phone,
+			user_admin,
 		};
 	},
 	RESET_USERINFO(state) {
@@ -70,7 +73,7 @@ const actions = {
 		//初始化用户 以用户openid为唯一标识
 		let openid = '';
 		let res = await user.getOpenid(code);
-		
+
 		if (res.status === 200) {
 			openid = res.openid;
 			uni.setStorageSync('openid', openid);

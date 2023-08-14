@@ -25,6 +25,9 @@
 		},
 		"create_time": {
 			"description": "创建时间"
+		},
+		"time": {
+			"description": "创建时间"
 		}
 	}
 }

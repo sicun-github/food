@@ -132,10 +132,12 @@ var render = function () {
   var l0 = _vm.__map(_vm.HoleList, function (item, index) {
     var $orig = _vm.__get_orig(item)
     var g0 = item.hole_img.length
+    var g1 = g0 ? item.hole_img.length : null
     var m0 = _vm.getTime(item.hole_addtime)
     return {
       $orig: $orig,
       g0: g0,
+      g1: g1,
       m0: m0,
     }
   })
@@ -322,7 +324,7 @@ var _default = {
       this.showComment = false;
     },
     getTime: function getTime(time) {
-      return (0, _dayjs.default)(time).format('YYYY-MM-DD HH:mm');
+      return (0, _dayjs.default)(time).format('YYYY-MM-DD HH:mm:ss');
     },
     getTreeHole: function getTreeHole() {
       var _arguments = arguments,
@@ -358,6 +360,12 @@ var _default = {
   // },
   onLoad: function onLoad() {
     this.getTreeHole();
+  },
+  onShareAppMessage: function onShareAppMessage(res) {
+    return {
+      title: '美食日历',
+      path: '/pages/home/index'
+    };
   }
 };
 exports.default = _default;

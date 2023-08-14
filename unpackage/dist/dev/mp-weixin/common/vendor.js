@@ -19034,7 +19034,8 @@ var state = {
     user_credit: '',
     user_wallet: '',
     user_coupon: '',
-    user_phone: ''
+    user_phone: '',
+    user_admin: false
   },
   address: {},
   isLogin: false
@@ -19061,14 +19062,16 @@ var mutations = {
       user_credit = userinfo.user_credit,
       user_wallet = userinfo.user_wallet,
       user_coupon = userinfo.user_coupon,
-      user_phone = userinfo.user_phone;
+      user_phone = userinfo.user_phone,
+      user_admin = userinfo.user_admin;
     state.userinfo = {
       user_name: user_name,
       user_avatar: user_avatar,
       user_credit: user_credit,
       user_wallet: user_wallet,
       user_coupon: user_coupon,
-      user_phone: user_phone
+      user_phone: user_phone,
+      user_admin: user_admin
     };
   },
   RESET_USERINFO: function RESET_USERINFO(state) {

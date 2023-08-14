@@ -34,6 +34,10 @@ page {
 .container .card_container .card .right.data-v-b2198260 {
   flex: 1;
   margin-left: 10rpx;
+  height: 200rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .container .card_container .card .right .title.data-v-b2198260 {
   display: flex;

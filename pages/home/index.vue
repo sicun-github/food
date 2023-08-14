@@ -131,6 +131,12 @@ export default {
 			console.log(this.$store.state.user.userinfo.user_credit);
 		}
 	},
+	onShareAppMessage(res) {
+		return {
+			title: '美食日历',
+			path: '/pages/home/index',
+		};
+	},
 };
 </script>
 

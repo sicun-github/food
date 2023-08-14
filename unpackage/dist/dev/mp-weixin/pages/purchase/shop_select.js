@@ -150,12 +150,13 @@ var render = function () {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   var g0 = _vm.ShopList.length <= 0 && _vm.showWinner == false
+  var g1 = _vm.ShopList.length
   var l0 = _vm.__map(_vm.ShopList, function (item, __i0__) {
     var $orig = _vm.__get_orig(item)
-    var g1 = _vm.selects.includes(item._id)
+    var g2 = g1 > 0 ? _vm.selects.includes(item._id) : null
     return {
       $orig: $orig,
-      g1: g1,
+      g2: g2,
     }
   })
   if (!_vm._isMounted) {
@@ -176,6 +177,7 @@ var render = function () {
     {
       $root: {
         g0: g0,
+        g1: g1,
         l0: l0,
       },
     }
@@ -427,7 +429,7 @@ var _default = {
     placeOrder: function placeOrder() {
       var _this7 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee7() {
-        var create_time, shop_list, order, result;
+        var create_time, time, shop_list, order, result;
         return _regenerator.default.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -442,8 +444,8 @@ var _default = {
                   duration: 2000
                 }));
               case 2:
-                // const create_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
-                create_time = new Date();
+                create_time = (0, _dayjs.default)().format('YYYY-MM-DD HH:mm:ss');
+                time = new Date();
                 shop_list = _this7.ShopList.filter(function (item) {
                   return _this7.selects.includes(item._id);
                 });
@@ -451,11 +453,12 @@ var _default = {
                   user_id: _this7.user_id,
                   name: _this7.user_name,
                   shop_list: shop_list,
-                  create_time: create_time
+                  create_time: create_time,
+                  time: time
                 };
-                _context7.next = 7;
+                _context7.next = 8;
                 return orderCloud.createOrder(order);
-              case 7:
+              case 8:
                 result = _context7.sent;
                 if (result.code === 200) {
                   uni.showToast({
@@ -464,7 +467,7 @@ var _default = {
                   });
                   _this7.selects = [];
                 }
-              case 9:
+              case 10:
               case "end":
                 return _context7.stop();
             }
@@ -475,6 +478,16 @@ var _default = {
   },
   onLoad: function onLoad() {
     this.getSouthShopInfo();
+  },
+  // onPullDownRefresh() {
+  // 	this.getSouthShopInfo();
+  // 	uni.stopPullDownRefresh();
+  // },
+  onShareAppMessage: function onShareAppMessage(res) {
+    return {
+      title: '美食日历',
+      path: '/pages/home/index'
+    };
   }
 };
 exports.default = _default;

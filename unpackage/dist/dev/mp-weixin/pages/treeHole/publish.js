@@ -387,6 +387,12 @@ var _default = {
         }, _callee4);
       }))();
     }
+  },
+  onShareAppMessage: function onShareAppMessage(res) {
+    return {
+      title: '美食日历',
+      path: '/pages/home/index'
+    };
   }
 };
 exports.default = _default;

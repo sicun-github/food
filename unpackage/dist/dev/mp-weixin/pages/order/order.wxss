@@ -104,6 +104,9 @@
 .card .right.data-v-127632e4 {
   flex: 1;
   margin-left: 10rpx;
+  height: 200rpx;
+  display: flex;
+  flex-direction: column;
 }
 .card .right .title.data-v-127632e4 {
   display: flex;

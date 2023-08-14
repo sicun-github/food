@@ -14,8 +14,8 @@ module.exports = {
 	//用用户的code获取小程序用户openid并且在服务端查询是否有该用户，无则注册用户并初始化用户信息
 	async getOpenid(code) {
 		console.log('%c 🎂 code: ', 'background-color: #6EC1C2;color:#fff;', code);
-		let url = `https://api.weixin.qq.com/sns/jscode2session?appid=wxdb5c61b18b9eb149&secret=1bdd2770e5b4d0397401426876e71582&js_code=${code}&grant_type=authorization_code`;
-		
+		let url = `https://api.weixin.qq.com/sns/jscode2session?appid=wxdb5c61b18b9eb149&secret=f8922eafaf9d97fce6bb57cefda1e3c5&js_code=${code}&grant_type=authorization_code`;
+
 		const res = await uniCloud.httpclient.request(url, {
 			method: 'GET',
 			dataType: 'json',

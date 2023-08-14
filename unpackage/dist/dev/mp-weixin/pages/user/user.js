@@ -296,6 +296,12 @@ var _default = {
         url: '/pages/user/wallet/wallet'
       }, true);
     }
+  },
+  onShareAppMessage: function onShareAppMessage(res) {
+    return {
+      title: '美食日历',
+      path: '/pages/home/index'
+    };
   }
 };
 exports.default = _default;

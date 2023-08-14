@@ -35,6 +35,7 @@
 							:text="item.hole_content"
 						></u--text>
 						<u-album
+							v-if="item.hole_img.length"
 							:urls="item.hole_img.length ? item.hole_img : []"
 						></u-album>
 						<view class="wechat-container" style="">
@@ -206,7 +207,7 @@ export default {
 			this.showComment = false;
 		},
 		getTime(time) {
-			return dayjs(time).format('YYYY-MM-DD HH:mm');
+			return dayjs(time).format('YYYY-MM-DD HH:mm:ss');
 		},
 		async getTreeHole(start = 0) {
 			let result = await treeHole.getAllHole({ start });
@@ -221,6 +222,12 @@ export default {
 	// },
 	onLoad() {
 		this.getTreeHole();
+	},
+	onShareAppMessage(res) {
+		return {
+			title: '美食日历',
+			path: '/pages/home/index',
+		};
 	},
 };
 </script>

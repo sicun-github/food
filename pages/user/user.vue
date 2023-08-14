@@ -4,7 +4,7 @@
 			<image
 				style="width: 100%; height: 500rpx"
 				src="../../static/logo.jpg"
-				mode="aspectFit"
+				mode="aspectFill"
 			/>
 		</view>
 
@@ -13,7 +13,7 @@
 				<view class="left">
 					<view class="introduce" v-if="isLogin">
 						<text>你好，{{ name ? name : 'wechatUser' }}</text>
-						<text class="welcome">欢迎使用每日菜谱</text>
+						<text class="welcome">欢迎使用美食日历</text>
 					</view>
 					<text v-else @tap="login">点我一键登录！</text>
 				</view>
@@ -226,6 +226,12 @@ export default {
 				true
 			);
 		},
+	},
+	onShareAppMessage(res) {
+		return {
+			title: '美食日历',
+			path: '/pages/home/index',
+		};
 	},
 };
 </script>
